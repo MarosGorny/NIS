@@ -4,7 +4,7 @@ async function userExists(userid) {
   try {
     let conn = await database.getConnection();
     const result = await conn.execute(
-      `SELECT count(*) as pocet FROM user_tab where userid = :userid`,
+      `SELECT count(*) as pocet FROM users where user_id = :userid`,
       [userid]
     );
 
@@ -23,7 +23,7 @@ async function insertUser(body) {
     let conn = await database.getConnection();
 
     const result = await conn.execute(
-      `insert into user_tab values(:userid, :pwd, null, :role)`,
+      `insert into users values(:userid, :pwd, null, :role)`,
       {
         userid: body.userid,
         pwd: body.pwd,
@@ -43,7 +43,7 @@ async function getUserByUserId(userid) {
     let conn = await database.getConnection();
 
     const result = await conn.execute(
-      `select * from user_tab where userid = :userid`,
+      `select * from users where user_id = :userid`,
       {
         userid: userid,
       }
@@ -61,7 +61,7 @@ async function getUserByRefreshToken(refresh_token) {
     let conn = await database.getConnection();
 
     const result = await conn.execute(
-      `select * from user_tab where refresh_token = :refresh_token`,
+      `select * from users where refresh_token = :refresh_token`,
       {
         refresh_token: refresh_token,
       }
@@ -79,7 +79,7 @@ async function updateUserRefreshToken(body) {
     let conn = await database.getConnection();
 
     const result = await conn.execute(
-      `update user_tab set refresh_token = :refresh_token where userid = :userid`,
+      `update users set refresh_token = :refresh_token where user_id = :userid`,
       {
         refresh_token: body.refresh_token,
         userid: body.userid,

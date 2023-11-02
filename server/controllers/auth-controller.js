@@ -63,12 +63,12 @@ const handleLogin = async (req, res) => {
   if (!(await userModel.userExists(userid))) return res.sendStatus(401); //Unauthorized
 
   const foundUser = await userModel.getUserByUserId(userid);
-  const match = await bcrypt.compare(pwd, foundUser.PWD);
+  const match = await bcrypt.compare(pwd, foundUser.PASS);
   if (match == true) {
     const accessToken = jwt.sign(
       {
         UserInfo: {
-          userid: foundUser.USERID,
+          userid: foundUser.USER_ID,
           role: foundUser.ROLE,
         },
       },
@@ -77,13 +77,13 @@ const handleLogin = async (req, res) => {
     );
 
     const refreshToken = jwt.sign(
-      { userid: foundUser.USERID },
+      { userid: foundUser.USER_ID },
       process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: '1d' }
     );
 
     userModel.updateUserRefreshToken({
-      userid: foundUser.USERID,
+      userid: foundUser.USER_ID,
       refresh_token: refreshToken,
     });
 
@@ -109,7 +109,7 @@ const handleLogout = async (req, res) => {
 
   // Delete refreshToken in db
   userModel.updateUserRefreshToken({
-    userid: foundUser.USERID,
+    userid: foundUser.USER_ID,
     refresh_token: null,
   });
 
@@ -127,12 +127,12 @@ const handleRefreshToken = async (req, res) => {
   if (!foundUser) return res.sendStatus(403); //Forbidden
   // evaluate jwt
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
-    if (err || foundUser.USERID !== decoded.userid) return res.sendStatus(403);
+    if (err || foundUser.USER_ID !== decoded.userid) return res.sendStatus(403);
 
     const accessToken = jwt.sign(
       {
         UserInfo: {
-          userid: foundUser.USERID,
+          userid: foundUser.USER_ID,
           role: foundUser.ROLE,
         },
       },
