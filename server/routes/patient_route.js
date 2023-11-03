@@ -9,5 +9,17 @@ router.get(
   //verify.checkForCorrectId(),
   controller.getPatientsByHospital
 );
+router.post(
+  '/',
+  //verify.verifyRoles(1, 3),
+  //verify.checkForCorrectId(),
+  controller.addPatient
+);
+router.post(
+  '/delete',
+  //verify.verifyRoles(1, 3),
+  //verify.checkForCorrectId(),
+  controller.deletePatient
+);
 
 module.exports = router;

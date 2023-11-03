@@ -4,6 +4,7 @@ import './App.scss';
 import { Login } from './auth/login/Login';
 import Logout from './auth/logout/Logout';
 import PatientsTable from 'tables/PatientsTable';
+import PatientForm from 'forms/PatientForm';
 
 function App() {
   return (
@@ -15,6 +16,10 @@ function App() {
         <Route
           path="/patient"
           element={<PatientsTable></PatientsTable>}
+        ></Route>
+        <Route
+          path="/patient/form"
+          element={<PatientForm></PatientForm>}
         ></Route>
       </Routes>
     </div>

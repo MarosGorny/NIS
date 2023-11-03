@@ -5,7 +5,7 @@ async function getStaffById(staffId) {
     let conn = await database.getConnection();
 
     const result = await conn.execute(
-      `select * from staff where staff_id = :staffId`,
+      `SELECT * FROM staff WHERE staff_id = :staffId`,
       {
         staffId: staffId,
       }

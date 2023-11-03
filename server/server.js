@@ -19,6 +19,7 @@ app.use(
 app.use(cookieParser());
 app.use('/auth', require('./routes/auth_route'));
 app.use('/patient', require('./routes/patient_route'));
+app.use('/municipality', require('./routes/mucipality_route'));
 app.use(verifyJWT);
 
 server.listen(port, () => {

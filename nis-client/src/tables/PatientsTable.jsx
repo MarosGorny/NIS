@@ -1,12 +1,15 @@
 // @ts-nocheck
-import React, { useState, useEffect } from 'react';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Dialog } from 'primereact/dialog';
-import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { Button } from 'primereact/button';
+import { Column } from 'primereact/column';
+import { DataTable } from 'primereact/datatable';
+import { Dialog } from 'primereact/dialog';
+import { InputText } from 'primereact/inputtext';
+import { Skeleton } from 'primereact/skeleton';
+import { Toast } from 'primereact/toast';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { Link } from 'react-router-dom';
 import GetUserData from '../auth/get_user_data';
 
 export default function PatientsTable() {
@@ -14,11 +17,21 @@ export default function PatientsTable() {
   const [filters, setFilters] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
-  const [patients, setPatients] = useState([]);
+  const [patients, setPatients] = useState(Array.from({ length: 25000 }));
   const [lazyLoading, setLazyLoading] = useState(false);
   const navigate = useNavigate();
+  const toast = useRef(null);
 
   useEffect(() => {
+    loadPatientsLazy();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    initFilters();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadPatientsLazy = () => {
+    setLazyLoading(true);
     const token = localStorage.getItem('logged-user');
     const tokenParsedData = GetUserData(token);
     const headers = { authorization: 'Bearer ' + token };
@@ -28,12 +41,33 @@ export default function PatientsTable() {
       .then((response) => response.json())
       .then((data) => {
         setPatients(data);
+        setLazyLoading(false);
       });
-  }, [patients]); // eslint-disable-line react-hooks/exhaustive-deps
+  };
 
-  useEffect(() => {
-    initFilters();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const deletePatient = async (rowData) => {
+    const token = localStorage.getItem('logged-user');
+    const requestOptionsPatient = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: 'Bearer ' + token,
+      },
+      body: JSON.stringify({
+        birth_number: rowData.BIRTH_NUMBER,
+      }),
+    };
+
+    fetch(`/patient/delete`, requestOptionsPatient).then((result) => {
+      if (result.status === 200) {
+        showSuccess();
+        loadPatientsLazy();
+      } else {
+        showError();
+        console.error(result);
+      }
+    });
+  };
 
   const onHide = () => {
     setShowDialog(false);
@@ -47,6 +81,22 @@ export default function PatientsTable() {
   const handleClick = (value) => {
     setShowDialog(true);
     setSelectedRow(value);
+  };
+
+  const showSuccess = () => {
+    toast.current.show({
+      severity: 'success',
+      summary: 'Úspešne odstránený',
+      detail: 'Pacient bol úspešne odstránený',
+    });
+  };
+
+  const showError = () => {
+    toast.current.show({
+      severity: 'error',
+      summary: 'Pacient nie je odstránený',
+      detail: 'Pacienta sa nepodarilo odstrániť',
+    });
   };
 
   const renderDialogFooter = () => {
@@ -81,7 +131,13 @@ export default function PatientsTable() {
               placeholder="Vyhľadať..."
             />
           </span>
-          <Button icon="pi pi-plus" />
+          <Link to="/patient/form">
+            <Button
+              type="button"
+              icon="pi pi-plus"
+              className="p-button-secondary"
+            />
+          </Link>
         </div>
       </div>
     );
@@ -175,10 +231,10 @@ export default function PatientsTable() {
     );
   };
 
-  const actionTemplate = (rowData) => (
+  const deletePatientAction = (rowData) => (
     <Button
       icon="pi pi-times"
-      onClick={() => handleClick(rowData)}
+      onClick={() => deletePatient(rowData)}
       className="p-button-danger"
     />
   );
@@ -188,12 +244,33 @@ export default function PatientsTable() {
     { field: 'NAME', header: 'Meno', filter: true },
     { field: 'SURNAME', header: 'Priezvisko', filter: true },
     { field: 'POSTAL_CODE', header: 'PSČ', filter: true },
-    { field: '', header: '', body: actionTemplate, filter: false },
+    { field: '', header: '', body: deletePatientAction, filter: false },
   ];
+
+  const loadingTemplate = (options) => {
+    return (
+      <div
+        className="flex align-items-center"
+        style={{ height: '17px', flexGrow: '1', overflow: 'hidden' }}
+      >
+        <Skeleton
+          width={
+            options.cellEven
+              ? options.field === 'year'
+                ? '30%'
+                : '40%'
+              : '60%'
+          }
+          height="1rem"
+        />
+      </div>
+    );
+  };
 
   const header = renderHeader();
   return (
     <div>
+      <Toast ref={toast} />
       <div className="card">
         <DataTable
           value={patients}
@@ -204,6 +281,8 @@ export default function PatientsTable() {
           header={header}
           filters={filters}
           filterDisplay="menu"
+          scrollable
+          scrollHeight="90vh"
           globalFilterFields={[
             'BIRTH_NUMBER',
             'NAME',
@@ -211,6 +290,15 @@ export default function PatientsTable() {
             'POSTAL_CODE',
           ]}
           emptyMessage="Žiadne výsledky nevyhovujú vyhľadávaniu"
+          virtualScrollerOptions={{
+            lazy: true,
+            onLazyLoad: loadPatientsLazy,
+            itemSize: 60,
+            delay: 150,
+            showLoader: true,
+            loading: lazyLoading,
+            loadingTemplate,
+          }}
         >
           {columns.map((col) => (
             <Column
