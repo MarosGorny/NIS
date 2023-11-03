@@ -10,8 +10,6 @@ const credentials = require('./user_verification/access_control_allow_credential
 
 const server = http.createServer(app); // Create an HTTP server using your Express app
 
-/* ROUTES */
-
 app.use(credentials);
 app.use(express.json({ limit: '50mb' }));
 app.use(
@@ -20,6 +18,7 @@ app.use(
 
 app.use(cookieParser());
 app.use('/auth', require('./routes/auth_route'));
+app.use('/patient', require('./routes/patient_route'));
 app.use(verifyJWT);
 
 server.listen(port, () => {
