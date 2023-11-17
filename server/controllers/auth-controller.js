@@ -1,5 +1,7 @@
 const bcrypt = require('bcrypt');
 const userModel = require('../models/user');
+const patientModel = require('../models/patient');
+const staffModel = require('../models/staff');
 var jwt = require('jsonwebtoken');
 require('dotenv').config();
 
@@ -65,11 +67,23 @@ const handleLogin = async (req, res) => {
   const foundUser = await userModel.getUserByUserId(userid);
   const match = await bcrypt.compare(pwd, foundUser.PASS);
   if (match == true) {
+    const patient = await patientModel.getPatientById(userid);
+    const staff = await staffModel.getStaffById(userid);
+    let hospital_id = null;
+    let medical_role = null;
+    if (patient) {
+      hospital_id = patient.HOSPITAL_ID;
+    } else if (staff) {
+      hospital_id = staff.HOSPITAL_ID;
+      medical_role = staff.MEDICAL_WORKER_ROLE_CODE;
+    }
+
     const accessToken = jwt.sign(
       {
         UserInfo: {
           userid: foundUser.USER_ID,
-          role: foundUser.ROLE,
+          role: medical_role,
+          hospital: hospital_id,
         },
       },
       process.env.ACCESS_TOKEN_SECRET,

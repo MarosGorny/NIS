@@ -23,7 +23,7 @@ async function insertUser(body) {
     let conn = await database.getConnection();
 
     const result = await conn.execute(
-      `insert into users values(:userid, :pwd, null, :role)`,
+      `INSERT INTO users VALUES(:userid, :pwd, null, :role)`,
       {
         userid: body.userid,
         pwd: body.pwd,
@@ -43,7 +43,7 @@ async function getUserByUserId(userid) {
     let conn = await database.getConnection();
 
     const result = await conn.execute(
-      `select * from users where user_id = :userid`,
+      `SELECT * FROM users WHERE user_id = :userid`,
       {
         userid: userid,
       }
@@ -61,7 +61,7 @@ async function getUserByRefreshToken(refresh_token) {
     let conn = await database.getConnection();
 
     const result = await conn.execute(
-      `select * from users where refresh_token = :refresh_token`,
+      `SELECT * FROM users WHERE refresh_token = :refresh_token`,
       {
         refresh_token: refresh_token,
       }
@@ -79,7 +79,7 @@ async function updateUserRefreshToken(body) {
     let conn = await database.getConnection();
 
     const result = await conn.execute(
-      `update users set refresh_token = :refresh_token where user_id = :userid`,
+      `UPDATE users SET refresh_token = :refresh_token WHERE user_id = :userid`,
       {
         refresh_token: body.refresh_token,
         userid: body.userid,
