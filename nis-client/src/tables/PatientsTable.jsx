@@ -24,9 +24,6 @@ export default function PatientsTable() {
 
   useEffect(() => {
     loadPatientsLazy();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
     initFilters();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -75,7 +72,7 @@ export default function PatientsTable() {
 
   const onSubmit = () => {
     setShowDialog(false);
-    navigate('/patient', { state: selectedRow.PATIENT_ID });
+    navigate('/patient/profile', { state: selectedRow.PATIENT_ID });
   };
 
   const handleClick = (value) => {

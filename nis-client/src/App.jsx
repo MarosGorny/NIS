@@ -5,6 +5,8 @@ import { Login } from './auth/login/Login';
 import Logout from './auth/logout/Logout';
 import PatientsTable from 'tables/PatientsTable';
 import PatientForm from 'forms/PatientForm';
+import PrescriptionForm from 'forms/PrescriptionForm';
+import PatientProfile from 'components/PatientProfile';
 
 function App() {
   return (
@@ -20,6 +22,14 @@ function App() {
         <Route
           path="/patient/form"
           element={<PatientForm></PatientForm>}
+        ></Route>
+        <Route
+          path="/patient/profile"
+          element={<PatientProfile></PatientProfile>}
+        ></Route>
+        <Route
+          path="/prescription/form"
+          element={<PrescriptionForm></PrescriptionForm>}
         ></Route>
       </Routes>
     </div>
