@@ -9,6 +9,12 @@ router.get(
   //verify.checkForCorrectId(),
   controller.getPatientsByHospital
 );
+router.get(
+  '/:id/vaccinationHistory',
+  //verify.verifyRoles(1, 3),
+  //verify.checkForCorrectId(),
+  controller.getVaccinationsHistoryByPatientId
+);
 router.post(
   '/',
   //verify.verifyRoles(1, 3),

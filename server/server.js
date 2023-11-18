@@ -20,6 +20,11 @@ app.use(cookieParser());
 app.use('/auth', require('./routes/auth_route'));
 app.use('/patient', require('./routes/patient_route'));
 app.use('/municipality', require('./routes/mucipality_route'));
+app.use('/prescription', require('./routes/prescription_route'));
+app.use('/diagnose', require('./routes/diagnose_route'));
+app.use('/drug', require('./routes/drug_route'));
+app.use('/dashboard', require('./routes/dashboard_route'));
+app.use('/hospital', require('./routes/hospital_route'));
 app.use(verifyJWT);
 
 server.listen(port, () => {

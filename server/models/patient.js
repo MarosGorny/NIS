@@ -5,13 +5,40 @@ async function getPatientById(patientId) {
     let conn = await database.getConnection();
 
     const result = await conn.execute(
-      `select * from patient where patient_id = :patientId`,
+      `SELECT * FROM patient WHERE patient_id = :patientId`,
       {
         patientId: patientId,
       }
     );
 
     return result.rows[0];
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
+async function getVaccinationsHistoryByPatientId(patientId) {
+  try {
+    let conn = await database.getConnection();
+
+    const result = await conn.execute(
+      `
+      SELECT 
+          vh.type_vaccination, 
+          vh.date_vaccination, 
+          vh.date_re_vaccination, 
+          vh.dose_vaccine,
+          mc.patient_id
+      FROM 
+          medical_card mc, 
+          TABLE(mc.vaccination_history) vh
+      WHERE patient_id = :patientId`,
+      {
+        patientId: patientId,
+      }
+    );
+
+    return result.rows;
   } catch (err) {
     throw new Error('Database error: ' + err);
   }
@@ -96,4 +123,5 @@ module.exports = {
   getPatientsByHospital,
   addPatient,
   deletePatient,
+  getVaccinationsHistoryByPatientId,
 };
