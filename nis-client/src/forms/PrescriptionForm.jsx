@@ -108,7 +108,7 @@ export default function PrescriptionForm() {
 
   const validate = (data) => {
     let errors = {};
-
+    // TODO errors
     /* if (!data.drugs || data.drugs.length === 0) {
       errors.drugs = 'Zadanie liekov je povinné.';
     }

@@ -13,12 +13,12 @@ export default function BloodDonationTypes(props) {
   }, [props?.hospitalId, props?.date]);
 
   useEffect(() => {
-    if (!bloodTypes || !bloodTypes[0]) return;
+    if (!bloodTypes) return;
 
-    const bloodDataTypes = Object.keys(bloodTypes[0]);
+    const bloodDataTypes = Object.keys(bloodTypes);
     const bloodData = [];
     bloodDataTypes.forEach((bloodType) => {
-      bloodData.push(bloodTypes[0][bloodType]);
+      bloodData.push(bloodTypes[bloodType]);
     });
 
     const data = {
