@@ -25,6 +25,32 @@ async function getDiagnoses(diagnoseName) {
   }
 }
 
+async function getDiagnoseByCode(code) {
+  try {
+    let conn = await database.getConnection();
+
+    const result = await conn.execute(
+      `
+      SELECT 
+          d.name name,
+          d.diagnose_code diagnose_code
+      FROM 
+        diagnose d
+      WHERE 
+        d.diagnose_code = :code
+        `,
+      {
+        code: code,
+      }
+    );
+
+    return result.rows[0];
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
 module.exports = {
   getDiagnoses,
+  getDiagnoseByCode,
 };

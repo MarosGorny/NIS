@@ -3,6 +3,8 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
+import { Dialog } from 'primereact/dialog';
+import { Image } from 'primereact/image';
 import { InputText } from 'primereact/inputtext';
 import { Skeleton } from 'primereact/skeleton';
 import { Toast } from 'primereact/toast';
@@ -11,20 +13,25 @@ import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import GetUserData from '../auth/get_user_data';
 
-export default function PatientVaccinationTable(props) {
+export default function MedicalRecordTable(props) {
   const [globalFilterValue, setGlobalFilterValue] = useState('');
   const [filters, setFilters] = useState(null);
-  const [vaccinations, setVaccinations] = useState(Array.from({ length: 50 }));
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [showDialog, setShowDialog] = useState(false);
+  const [medicalRecords, setMedicalRecords] = useState(
+    Array.from({ length: 50 }),
+  );
   const [lazyLoading, setLazyLoading] = useState(false);
+  const [medicalRecordImgUrl, setMedicalRecordImgUrl] = useState(null);
   const navigate = useNavigate();
   const toast = useRef(null);
 
   useEffect(() => {
-    loadVaccinationsLazy();
+    loadMedicalRecordsLazy();
     initFilters();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const loadVaccinationsLazy = () => {
+  const loadMedicalRecordsLazy = () => {
     setLazyLoading(true);
     const token = localStorage.getItem('logged-user');
     const tokenParsedData = GetUserData(token);
@@ -32,37 +39,47 @@ export default function PatientVaccinationTable(props) {
     const userId = props.patientId
       ? props.patientId
       : tokenParsedData.UserInfo.userId;
-    fetch(`/patient/${userId}/vaccinationHistory`, {
+    fetch(`/medicalRecord/patient/${userId}`, {
       headers,
     })
       .then((response) => response.json())
       .then((data) => {
-        setVaccinations(data);
+        setMedicalRecords(data);
         setLazyLoading(false);
       });
   };
 
-  const handleClick = (value) => {
-    navigate('/prescription/form', {
-      state: {
-        prescriptionId: value.PRESCRIPTION_ID,
-        patientId: props.patientId ? props.patientId : null,
-      },
-    });
+  const fetchDialogData = async (recordId) => {
+    if (!props.patientId) return;
+
+    const token = localStorage.getItem('logged-user');
+    const headers = { authorization: 'Bearer ' + token };
+    const tokenParsedData = GetUserData(token);
+    const userId = props.patientId
+      ? props.patientId
+      : tokenParsedData.UserInfo.userId;
+    const response = await fetch(
+      `/medicalRecord/patient/${userId}/record/${recordId}`,
+      { headers },
+    );
+    const data = await response.json();
+    return data;
   };
 
-  const showSuccessDelete = () => {
-    toast.current.show({
-      severity: 'success',
-      summary: 'Úspešne odstránená',
-      detail: 'Vakcinácia úšpešne odstránená.',
-    });
+  const fetchMedicalRecordImage = async (recordId) => {
+    const token = localStorage.getItem('hospit-user');
+    const headers = { authorization: 'Bearer ' + token };
+    fetch(`/medicalRecord/image/record/${recordId}`, { headers })
+      .then((res) => res.blob())
+      .then((result) => {
+        setMedicalRecordImgUrl(URL.createObjectURL(result));
+      });
   };
 
   const renderHeader = () => {
     return (
       <div className="table-header">
-        <span>Vakcinácie</span>
+        <span>Medické zákroky</span>
         <div className="table-header-right">
           <span className="p-input-icon-left">
             <i className="pi pi-search" />
@@ -73,7 +90,7 @@ export default function PatientVaccinationTable(props) {
             />
           </span>
           <Link
-            to="/prescription/form"
+            to="/medicalRecord/form"
             state={{
               patientId: props.patientId ? props.patientId : null,
             }}
@@ -100,11 +117,11 @@ export default function PatientVaccinationTable(props) {
   const initFilters = () => {
     setFilters({
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-      TYPE_VACCINATION: {
+      DATE_OF_ENTRY: {
         operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+        constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
       },
-      DOSE_VACCINE: {
+      PROCEDURE_NAME: {
         operator: FilterOperator.AND,
         constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
       },
@@ -112,11 +129,33 @@ export default function PatientVaccinationTable(props) {
     setGlobalFilterValue('');
   };
 
+  const handleMedicalRecordRowClick = async (value) => {
+    const dialogData = await fetchDialogData(value.RECORD_ID);
+    await fetchMedicalRecordImage(value.RECORD_ID);
+    setShowDialog(true);
+    setSelectedRow(dialogData);
+  };
+
+  const onHide = () => {
+    setShowDialog(false);
+    setSelectedRow(null);
+    setMedicalRecordImgUrl(null);
+  };
+
+  const handleEditButtonClick = (value) => {
+    navigate('/medicalRecord/form', {
+      state: {
+        medicalRecordId: value.RECORD_ID,
+        patientId: props.patientId ? props.patientId : null,
+      },
+    });
+  };
+
   const renderButtonColumn = (rowData) => (
-    // TODO - generate button maybe
-    <>
-      <Button icon="pi pi-cloud-download" onClick={() => console.log('TODO')} />
-    </>
+    <Button
+      icon="pi pi-pencil"
+      onClick={() => handleEditButtonClick(rowData)}
+    />
   );
 
   const formatDate = (date) => {
@@ -127,25 +166,20 @@ export default function PatientVaccinationTable(props) {
 
   const columns = [
     {
-      field: 'TYPE_VACCINATION',
-      header: 'Typ vykcíny',
+      field: 'DATE_OF_ENTRY',
+      header: 'Dátum zápisu',
       filter: true,
+      body: (value) => formatDate(value?.DATE_OF_ENTRY),
     },
     {
-      field: 'DATE_VACCINATION',
-      header: 'Dátum vakcinácie',
+      field: 'DATE_OF_UPDATE',
+      header: 'Dátum úpravy',
       filter: true,
-      body: (value) => formatDate(value?.DATE_VACCINATION),
+      body: (value) => formatDate(value?.DATE_OF_UPDATE),
     },
     {
-      field: 'DATE_RE_VACCINATION',
-      header: 'Dátum revakcinácie',
-      filter: true,
-      body: (value) => formatDate(value?.DATE_RE_VACCINATION),
-    },
-    {
-      field: 'DOSE_VACCINE',
-      header: 'Dávka',
+      field: 'PROCEDURE_NAME',
+      header: 'Procedúra',
       filter: true,
     },
     { field: '', header: '', body: renderButtonColumn, filter: false },
@@ -177,26 +211,25 @@ export default function PatientVaccinationTable(props) {
       <Toast ref={toast} />
       <div className="card">
         <DataTable
-          value={vaccinations}
+          value={medicalRecords}
           responsiveLayout="scroll"
           selectionMode="single"
-          onSelectionChange={(e) => handleClick(e.value)}
+          onSelectionChange={(e) => handleMedicalRecordRowClick(e.value)}
           header={header}
           filters={filters}
           filterDisplay="menu"
           scrollable
           scrollHeight="90vh"
           globalFilterFields={[
-            'TYPE_VACCINATION',
-            'DATE_VACCINATION',
-            'DATE_RE_VACCINATION',
-            'DOSE_VACCINE',
+            'DATE_OF_ENTRY',
+            'DATE_OF_UPDATE',
+            'PROCEDURE_NAME',
           ]}
           emptyMessage="Žiadne výsledky nevyhovujú vyhľadávaniu"
           virtualScrollerOptions={{
             lazy: true,
-            onLazyLoad: loadVaccinationsLazy,
-            itemSize: 60,
+            onLazyLoad: loadMedicalRecordsLazy,
+            itemSize: 80,
             delay: 150,
             showLoader: true,
             loading: lazyLoading,
@@ -213,6 +246,44 @@ export default function PatientVaccinationTable(props) {
             />
           ))}
         </DataTable>
+      </div>
+      <div id="patient-profile-medical-record-dialog">
+        <Dialog
+          header={selectedRow ? selectedRow.PROCEDURE_NAME : ''}
+          visible={showDialog}
+          style={{ width: '50vw' }}
+          onHide={() => onHide()}
+        >
+          <div className="patient-profile-medical-record-dialog-row">
+            <span>Dátum zápisu: </span>
+            <span>{formatDate(selectedRow?.DATE_OF_ENTRY)}</span>
+          </div>
+          <div className="patient-profile-medical-record-dialog-row">
+            <span>Dátum úpravy: </span>
+            <span>{formatDate(selectedRow?.DATE_OF_UPDATE)}</span>
+          </div>
+          <div className="patient-profile-medical-record-dialog-row">
+            <span>Poznámky: </span>
+            <p>{selectedRow?.NOTE}</p>
+          </div>
+          <div className="patient-profile-medical-record-dialog-row">
+            <span>Výsledok testu: </span>
+            <p>{selectedRow?.TEST_RESULT}</p>
+          </div>
+          <div className="patient-profile-medical-record-dialog-row">
+            <span>Diagnóza: </span>
+            <span>{selectedRow?.DIAGNOSE_NAME}</span>
+          </div>
+          <div className="patient-profile-medical-record-dialog-row">
+            <span>Meno doktora: </span>
+            <span>{selectedRow?.DOCTOR_NAME}</span>
+          </div>
+          <Image
+            src={medicalRecordImgUrl}
+            alt="Medical Record Image"
+            preview={true}
+          />
+        </Dialog>
       </div>
     </div>
   );
