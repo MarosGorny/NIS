@@ -141,7 +141,6 @@ export default function PatientForm() {
                       <InputText
                         id="name"
                         {...input}
-                        autoFocus
                         className={classNames({
                           'p-invalid': isFormFieldValid(meta),
                         })}

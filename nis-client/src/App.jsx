@@ -9,6 +9,7 @@ import PrescriptionForm from 'forms/PrescriptionForm';
 import PatientProfile from 'pages/PatientProfile';
 import Dashboard from 'pages/Dashboard';
 import MedicalRecordForm from 'forms/MedicalRecordForm';
+import VaccineForm from 'forms/VaccineForm';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -46,6 +47,10 @@ function App() {
         <Route
           path="/medicalRecord/form"
           element={<MedicalRecordForm></MedicalRecordForm>}
+        ></Route>
+        <Route
+          path="/vaccine/form"
+          element={<VaccineForm></VaccineForm>}
         ></Route>
       </Routes>
     </div>

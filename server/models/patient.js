@@ -24,10 +24,11 @@ async function getVaccinationsHistoryByPatientId(patientId) {
     const result = await conn.execute(
       `
       SELECT 
-          vh.type_vaccination, 
-          vh.date_vaccination, 
-          vh.date_re_vaccination, 
-          vh.dose_vaccine,
+          vh.vaccination_id,
+          vh.vaccine_name, 
+          vh.vaccination_date, 
+          vh.vaccination_next_date, 
+          vh.vaccination_dose,
           mc.patient_id
       FROM 
           medical_card mc, 
