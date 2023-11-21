@@ -27,6 +27,7 @@ app.use('/dashboard', require('./routes/dashboard_route'));
 app.use('/hospital', require('./routes/hospital_route'));
 app.use('/medicalRecord', require('./routes/medical_record_route'));
 app.use('/medicalProcedure', require('./routes/medical_procedure_route'));
+app.use('/vaccine', require('./routes/vaccine_route'));
 app.use(verifyJWT);
 
 server.listen(port, () => {

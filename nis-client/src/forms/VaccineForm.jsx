@@ -1,151 +1,127 @@
 import { AutoComplete } from 'primereact/autocomplete';
 import { Button } from 'primereact/button';
-import { FileUpload } from 'primereact/fileupload';
-import { InputText } from 'primereact/inputtext';
+import { Calendar } from 'primereact/calendar';
+import { Dropdown } from 'primereact/dropdown';
 import { Toast } from 'primereact/toast';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useRef, useState } from 'react';
 import { Field, Form } from 'react-final-form';
 import { useLocation, useNavigate } from 'react-router';
-import GetUserData from '../auth/get_user_data';
 
-export default function MedicalRecordForm() {
-  const [medicalProcedures, setMedicalProcedures] = useState([]);
-  const [diagnoses, setDiagnoses] = useState([]);
+export default function VaccineForm() {
+  const [typeVaccinations, setTypeVaccinations] = useState([]);
+  const [doseVaccines, setDoseVaccines] = useState([]);
   const [patientId, setPatientId] = useState(null);
-  const [encodedImage, setEncodedImage] = useState(null);
-  const [fileName, setFileName] = useState(null);
-  const [mimeType, setMimeType] = useState(null);
-  const [medicalRecordId, setMedicalRecordId] = useState(null);
+  const [vaccineId, setVaccineId] = useState(null);
   const [formInitialValues, setFormInitialValues] = useState({
-    notes: '',
-    testResult: '',
-    selectedMedicalProcedure: '',
-    selectedDiagnosis: '',
+    typeVaccination: '',
+    dateVaccination: new Date(),
+    dateReVaccination: new Date(),
+    doseVaccine: '',
   });
   const toast = useRef(null);
-  const fileUploader = useRef(null);
   const { state } = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!state) return;
     setPatientId(state.patientId);
-    setMedicalRecordId(state.medicalRecordId);
+    setVaccineId(state.vaccineId);
   }, []);
 
   useEffect(() => {
-    if (!medicalRecordId) return;
+    if (!vaccineId) return;
     fetchFormInitialValues();
-  }, [medicalRecordId]);
+  }, [vaccineId]);
 
   useEffect(() => {
-    fetchDiagnoses();
+    fetchVaccineDoses();
+    fetchVaccineType();
   }, []);
 
   const fetchFormInitialValues = () => {
-    if (!medicalRecordId) return;
+    if (!vaccineId || !patientId) return;
 
     const token = localStorage.getItem('logged-user');
     const headers = { authorization: 'Bearer ' + token };
-    fetch(`/medicalRecord/${medicalRecordId}`, {
+    fetch(`/vaccine/${vaccineId}/patient/${patientId}`, {
       headers,
     })
       .then((response) => response.json())
       .then(async (data) => {
-        setMedicalRecordId(data.RECORD_ID);
-
         const initialValuesFromDb = {
-          notes: data.NOTES,
-          testResult: data.TEST_RESULT,
-          selectedMedicalProcedure: await fetchInitialMedicalProcedure(
-            data.SELECTED_MEDICAL_PROCEDURE,
-          ),
-          selectedDiagnosis: await fetchInitialDiagnoseCode(
-            data.SELECTED_DIAGNOSIS,
-          ),
+          typeVaccination: await fetchInitialTypeVaccination(data.VACCINE_NAME),
+          dateVaccination: new Date(data.VACCINATION_DATE),
+          dateReVaccination: new Date(data.VACCINATION_NEXT_DATE),
+          doseVaccine: await fetchInitialDoseVaccine(data.VACCINATION_DOSE),
         };
         setFormInitialValues(initialValuesFromDb);
       });
   };
 
-  const fetchInitialDiagnoseCode = async (code) => {
+  const fetchInitialDoseVaccine = async (dose) => {
     const token = localStorage.getItem('logged-user');
     const headers = { authorization: 'Bearer ' + token };
-    const response = await fetch(`/diagnose/code/${code}`, { headers });
+    const response = await fetch(`/vaccine/dose/${dose}`, {
+      headers,
+    });
     const data = await response.json();
     return data;
   };
 
-  const fetchInitialMedicalProcedure = async (code) => {
+  const fetchInitialTypeVaccination = async (type) => {
     const token = localStorage.getItem('logged-user');
     const headers = { authorization: 'Bearer ' + token };
-    const response = await fetch(`/medicalProcedure/code/${code}`, { headers });
+    const response = await fetch(`/vaccine/type/initial/${type}`, {
+      headers,
+    });
     const data = await response.json();
     return data;
   };
 
-  const fetchDiagnoses = (diagnoseName) => {
+  const fetchVaccineDoses = () => {
     const token = localStorage.getItem('logged-user');
     const headers = { authorization: 'Bearer ' + token };
-    fetch(`/diagnose/${diagnoseName}`, {
+    fetch(`/vaccine/dose`, {
       headers,
     })
       .then((response) => response.json())
       .then((data) => {
-        setDiagnoses(data);
+        setDoseVaccines(data);
       });
   };
 
-  const handleDiagnosisSearch = (diagnoseName) => {
-    fetchDiagnoses(diagnoseName.query);
-  };
-
-  const fetchMedicalProcedures = (medicalProcedure) => {
+  const fetchVaccineType = (vaccineTypeName) => {
     const token = localStorage.getItem('logged-user');
     const headers = { authorization: 'Bearer ' + token };
-    fetch(`/medicalProcedure/${medicalProcedure}`, {
+    fetch(`/vaccine/type/${vaccineTypeName}`, {
       headers,
     })
       .then((response) => response.json())
       .then((data) => {
-        setMedicalProcedures(data);
+        setTypeVaccinations(data);
       });
   };
 
-  const handleMedicalProcedureSearch = (medicalProcedure) => {
-    fetchMedicalProcedures(medicalProcedure.query);
+  const handleVaccineTypeSearch = (vaccineTypeName) => {
+    fetchVaccineType(vaccineTypeName.query);
   };
 
   const showSuccess = () => {
     toast.current.show({
       severity: 'success',
       summary: 'Úspešne pridané',
-      detail: 'Predpis úspešne pridaný.',
+      detail: 'Vakcinácia úspešne pridaná.',
     });
-  };
-
-  const encodeImage = async (event) => {
-    const file = event.files[0];
-    const reader = new FileReader();
-    let blob = await fetch(file.objectURL).then((r) => r.blob());
-    reader.readAsDataURL(blob);
-    reader.onloadend = function () {
-      // @ts-ignore
-      setEncodedImage(reader.result.substring(reader.result.indexOf(',') + 1));
-      setFileName(file.name);
-      setMimeType(file.type);
-    };
   };
 
   const onSubmit = async (data, form) => {
     if (!patientId) {
-      navigate('/patient', { state: { errorPatientId: true } });
+      navigate('/patient');
       return;
     }
 
     const token = localStorage.getItem('logged-user');
-    const userData = GetUserData(token);
     const requestOptionsPatient = {
       method: 'POST',
       headers: {
@@ -154,42 +130,23 @@ export default function MedicalRecordForm() {
       },
 
       body: JSON.stringify({
-        medical_record_id: medicalRecordId,
-        notes: data.notes,
-        test_result: data.testResult,
-        medical_procedure: data.selectedMedicalProcedure.MEDICAL_PROCEDURE_CODE,
-        diagnose: data.selectedDiagnosis.DIAGNOSE_CODE,
-        patient_id: patientId,
-        staff_id: userData.UserInfo.userid,
-        image_data: encodedImage,
-        file_name: fileName,
-        mime_type: mimeType,
+        vaccine_id: vaccineId || null,
+        patient_id: patientId || null,
+        type_vaccination: data.typeVaccination.VACCINE_ID,
+        date_vaccination: data.dateVaccination,
+        date_re_vaccination: data.dateReVaccination,
+        dose_vaccine: data.doseVaccine,
       }),
     };
 
-    await fetch('/medicalRecord/insert', requestOptionsPatient).then(() => {
-      showSuccess();
-      navigate('/patient/profile', { state: patientId });
-    });
+    await fetch(`/vaccine/insert/${patientId}`, requestOptionsPatient).then(
+      () => {
+        showSuccess();
+        navigate('/patient/profile', { state: patientId });
+      },
+    );
 
     form.restart();
-  };
-
-  const headerTemplate = (options) => {
-    const { className, chooseButton, cancelButton } = options;
-    return (
-      <div
-        className={className}
-        style={{
-          backgroundColor: 'transparent',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        {chooseButton}
-        {cancelButton}
-      </div>
-    );
   };
 
   const validate = (data) => {
@@ -225,24 +182,24 @@ export default function MedicalRecordForm() {
         render={({ handleSubmit }) => (
           <form onSubmit={handleSubmit} className="p-fluid">
             <Field
-              name="notes"
+              name="dateVaccination"
               render={({ input, meta }) => (
                 <div className="field col-12">
                   <span className="p-float-label">
-                    <InputText
-                      id="notes"
+                    <Calendar
+                      id="dateVaccination"
                       {...input}
                       className={classNames({
                         'p-invalid': isFormFieldValid(meta),
                       })}
                     />
                     <label
-                      htmlFor="notes"
+                      htmlFor="dateVaccination"
                       className={classNames({
                         'p-error': isFormFieldValid(meta),
                       })}
                     >
-                      Poznámky
+                      Dátum vakcinácie*
                     </label>
                   </span>
                   {getFormErrorMessage(meta)}
@@ -250,25 +207,24 @@ export default function MedicalRecordForm() {
               )}
             />
             <Field
-              name="testResult"
+              name="dateReVaccination"
               render={({ input, meta }) => (
                 <div className="field col-12">
                   <span className="p-float-label">
-                    <InputText
-                      id="testResult"
+                    <Calendar
+                      id="dateReVaccination"
                       {...input}
-                      autoFocus
                       className={classNames({
                         'p-invalid': isFormFieldValid(meta),
                       })}
                     />
                     <label
-                      htmlFor="testResult"
+                      htmlFor="dateReVaccination"
                       className={classNames({
                         'p-error': isFormFieldValid(meta),
                       })}
                     >
-                      Výsledok testu
+                      Dátum re-vakcinácie*
                     </label>
                   </span>
                   {getFormErrorMessage(meta)}
@@ -276,81 +232,67 @@ export default function MedicalRecordForm() {
               )}
             />
             <Field
-              name="selectedMedicalProcedure"
+              name="doseVaccine"
+              render={({ input, meta }) => (
+                <div className="field col-12">
+                  <span className="p-float-label">
+                    <Dropdown
+                      {...input}
+                      id="doseVaccine"
+                      optionLabel="VACCINE_DOSE_TYPE"
+                      optionValue="VACCINE_DOSE_ID"
+                      value={input.value}
+                      options={doseVaccines}
+                      onChange={(e) => {
+                        input.onChange(e.value);
+                      }}
+                      placeholder="Dávka vakcíny"
+                      className={classNames({
+                        'p-invalid': isFormFieldValid(meta),
+                      })}
+                    />
+                    <label
+                      htmlFor="doseVaccine"
+                      className={classNames({
+                        'p-invalid': isFormFieldValid(meta),
+                      })}
+                    >
+                      Dávka vakcíny*
+                    </label>
+                  </span>
+                  {getFormErrorMessage(meta)}
+                </div>
+              )}
+            />
+            <Field
+              name="typeVaccination"
               render={({ input, meta }) => (
                 <div className="field col-12">
                   <span className="p-float-label">
                     <AutoComplete
                       {...input}
-                      id="selectedMedicalProcedure"
+                      id="typeVaccination"
                       value={input.value || ''}
-                      suggestions={medicalProcedures}
-                      completeMethod={(e) => handleMedicalProcedureSearch(e)}
-                      field="NAME"
+                      suggestions={typeVaccinations}
+                      completeMethod={(e) => handleVaccineTypeSearch(e)}
+                      field="VACCINE_NAME"
                       className={classNames({
                         'p-invalid': isFormFieldValid(meta),
                       })}
                     />
                     <label
-                      htmlFor="selectedMedicalProcedure"
+                      htmlFor="typeVaccination"
                       className={classNames({
                         'p-invalid': isFormFieldValid(meta),
                       })}
                     >
-                      Lekársky zákrok*
+                      Typ vakcíny*
                     </label>
                   </span>
                   {getFormErrorMessage(meta)}
                 </div>
               )}
             />
-            <Field
-              name="selectedDiagnosis"
-              render={({ input, meta }) => (
-                <div className="field col-12">
-                  <span className="p-float-label">
-                    <AutoComplete
-                      {...input}
-                      id="selectedDiagnosis"
-                      value={input.value || ''}
-                      suggestions={diagnoses}
-                      completeMethod={(e) => handleDiagnosisSearch(e)}
-                      field="NAME"
-                      className={classNames({
-                        'p-invalid': isFormFieldValid(meta),
-                      })}
-                    />
-                    <label
-                      htmlFor="selectedDiagnosis"
-                      className={classNames({
-                        'p-invalid': isFormFieldValid(meta),
-                      })}
-                    >
-                      Diagnóza*
-                    </label>
-                  </span>
-                  {getFormErrorMessage(meta)}
-                </div>
-              )}
-            />
-            <div>
-              <label htmlFor="basic">Príloha</label>
-              <FileUpload
-                ref={fileUploader}
-                mode="advanced"
-                accept="image/*"
-                customUpload
-                chooseLabel="Vložiť"
-                cancelLabel="Zrušiť"
-                headerTemplate={headerTemplate}
-                maxFileSize={5000000000}
-                onSelect={encodeImage}
-                uploadHandler={encodeImage}
-                emptyTemplate={
-                  <p className="m-0">Drag and drop files to here to upload.</p>
-                }
-              />
-            </div>
             <Button type="submit">Submit</Button>
           </form>
         )}
