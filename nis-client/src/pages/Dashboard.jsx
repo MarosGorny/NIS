@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import Top10BloodDonationsTable from 'tables/Top10BloodDonationsTable';
 import { Calendar } from 'primereact/calendar';
 import HospitalSpaceTable from 'tables/HospitalSpaceTable';
+import TopNDiagnosesTable from 'tables/TopNDiagnosesTable';
 
 export default function Dashboard(props) {
   const [hospital, setHospital] = useState('');
@@ -117,14 +118,21 @@ export default function Dashboard(props) {
         yearRange="2019:2023"
       />
 
-      <Card>
-        <HospitalSpaceTable data={hospitalSpaceData} />
-      </Card>
-
       <DashboardNumberCard
         title="Počet dnešných appointmentov"
         content={appointmentsCount}
       />
+
+      <Card>
+        <HospitalSpaceTable data={hospitalSpaceData} />
+      </Card>
+
+      <Card>
+        <TopNDiagnosesTable
+          hospitalId={hospitalId}
+          limitRows={10}
+        />
+      </Card>
 
       <Card>
         <Top10BloodDonationsTable
@@ -132,6 +140,7 @@ export default function Dashboard(props) {
           date={date}
         ></Top10BloodDonationsTable>
       </Card>
+
       <Card>
         <BloodDonationTypes
           hospitalId={hospitalId}

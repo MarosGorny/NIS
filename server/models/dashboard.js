@@ -46,6 +46,48 @@ async function getTop10PeopleWithMostBloodDonations(hospitalId, paramDate) {
   }
 }
 
+async function getTopNDiagnosesByAverageStay(hospitalId, limitRows = 10) {
+  try {
+    let conn = await database.getConnection();
+
+    const result = await conn.execute(
+      `
+        SELECT 
+            pr.diagnose_code,
+            d.name AS diagnosis_name,
+            AVG(pwr.date_until - pwr.date_from) AS average_stay_duration
+        FROM 
+            prescription pr
+        JOIN 
+            diagnose d ON pr.diagnose_code = d.diagnose_code
+        JOIN 
+            patient_in_ward_room pwr ON pr.patient_id = pwr.patient_id
+        JOIN 
+            patient pt ON pwr.patient_id = pt.patient_id
+        JOIN 
+            hospital h ON pt.hospital_id = h.hospital_id
+        WHERE 
+            pwr.date_from IS NOT NULL AND 
+            pwr.date_until IS NOT NULL AND 
+            h.hospital_id = :hospitalId
+        GROUP BY 
+            pr.diagnose_code, d.name
+        ORDER BY 
+            average_stay_duration DESC
+        FETCH FIRST :limitRows ROWS ONLY
+      `,
+      {
+        hospitalId: hospitalId,
+        limitRows: limitRows,
+      }
+    );
+
+    return result.rows;
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
 async function getBloodTypesByDonationsForHospital(hospitalId, paramDate) {
   try {
     let conn = await database.getConnection();
@@ -141,4 +183,5 @@ module.exports = {
   getBloodTypesByDonationsForHospital,
   getFreeSpacesInHospital,
   getAppointmentsCountByDate,
+  getTopNDiagnosesByAverageStay,
 };

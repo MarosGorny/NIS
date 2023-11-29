@@ -12,6 +12,20 @@ module.exports = {
       res.status(403).send(err);
     });
   },
+
+  getTopNDiagnosesByAverageStay: (req, res) => {
+    const dashboard = require('../models/dashboard');
+    (async () => {
+      const hospitalId = req.params.hospitalId;
+      const limitRows = req.params.limitRows;
+      const return_val = await dashboard.getTopNDiagnosesByAverageStay(hospitalId, limitRows);
+      res.status(200).json(return_val);
+    })().catch((err) => {
+      console.error(err);
+      res.status(403).send(err);
+    });
+  },
+  
   getBloodTypesByDonationsForHospital: (req, res) => {
     const dashboard = require('../models/dashboard');
     (async () => {
