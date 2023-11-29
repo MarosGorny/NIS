@@ -2,6 +2,26 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/prescription-controller');
 
+router.get(
+  '/valid/patient/:id', 
+  //verify.verifyRoles(1, 3),
+  //verify.checkForCorrectId(), 
+  controller.getAllValidPrescriptions
+);
+
+router.get(
+  '/expired/patient/:id',
+  //verify.verifyRoles(1, 3),
+  //verify.checkForCorrectId(),
+  controller.getAllExpiredPrescriptions
+);
+
+router.get(
+  '/expired', 
+  //verify.verifyRoles(1, 3),
+  //verify.checkForCorrectId(), 
+  controller.getAllExpiredPrescriptions
+);
 router.post(
   '/add',
   //verify.verifyRoles(1, 3),

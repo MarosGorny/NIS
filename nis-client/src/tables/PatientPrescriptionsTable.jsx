@@ -10,6 +10,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import GetUserData from '../auth/get_user_data';
+import { Dropdown } from 'primereact/dropdown';
 
 export default function PatientPrescriptionsTable(props) {
   const [globalFilterValue, setGlobalFilterValue] = useState('');
@@ -17,6 +18,11 @@ export default function PatientPrescriptionsTable(props) {
   const [prescriptions, setPrescriptions] = useState(
     Array.from({ length: 50 }),
   );
+
+  const [selectedPrescriptionType, setSelectedPrescriptionType] = useState('all');
+  const [validPrescriptions, setValidPrescriptions] = useState([]);
+  const [expiredPrescriptions, setExpiredPrescriptions] = useState([]);
+
   const [lazyLoading, setLazyLoading] = useState(false);
   const navigate = useNavigate();
   const toast = useRef(null);
@@ -77,6 +83,66 @@ export default function PatientPrescriptionsTable(props) {
     });
   };
 
+  const loadValidPrescriptions = async () => {
+    setLazyLoading(true);
+    const token = localStorage.getItem('logged-user');
+    const tokenParsedData = GetUserData(token);
+    const headers = { authorization: 'Bearer ' + token };
+    const userId = props.patientId
+    ? props.patientId
+    : tokenParsedData.UserInfo.userId;
+
+    fetch(`/prescription/valid/patient/${userId}`, { headers })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log('Fetched valid prescriptions:', data); // Add this line for debugging
+      if (Array.isArray(data)) {
+        setValidPrescriptions(data);
+      } else {
+        console.error('Received data is not an array:', data);
+      }
+      setLazyLoading(false);
+    });
+  };
+
+  const loadExpiredPrescriptions = async () => {
+    setLazyLoading(true);
+    const token = localStorage.getItem('logged-user');
+    const tokenParsedData = GetUserData(token);
+    const headers = { authorization: 'Bearer ' + token };
+    const userId = props.patientId
+    ? props.patientId
+    : tokenParsedData.UserInfo.userId;
+
+    fetch(`/prescription/expired/patient/${userId}`, { headers })
+      .then((response) => response.json())
+      .then((data) => {
+        if(Array.isArray(data)) {
+          setExpiredPrescriptions(data);
+        } else {
+          console.error('Received data is not an array:', data);
+        }
+        setLazyLoading(false);
+      });
+  };
+
+  const prescriptionTypeSelectItems = [
+    { label: 'All Prescriptions', value: 'all' },
+    { label: 'Valid Prescriptions', value: 'valid' },
+    { label: 'Expired Prescriptions', value: 'expired' },
+  ];
+
+  const onPrescriptionTypeChange = (e) => {
+    setSelectedPrescriptionType(e.value);
+    if (e.value === 'valid') {
+      loadValidPrescriptions();
+    } else if (e.value === 'expired') {
+      loadExpiredPrescriptions();
+    } else {
+      loadPrescriptionsLazy();
+    }
+  };
+
   const showSuccessDelete = () => {
     toast.current.show({
       severity: 'success',
@@ -126,6 +192,12 @@ export default function PatientPrescriptionsTable(props) {
       <div className="table-header">
         <span>Recepty</span>
         <div className="table-header-right">
+          <Dropdown
+            value={selectedPrescriptionType}
+            options={prescriptionTypeSelectItems}
+            onChange={onPrescriptionTypeChange}
+            placeholder="Select Prescription Type"
+          />
           <span className="p-input-icon-left">
             <i className="pi pi-search" />
             <InputText
@@ -233,12 +305,15 @@ export default function PatientPrescriptionsTable(props) {
   };
 
   const header = renderHeader();
+  const dataToDisplay = selectedPrescriptionType === 'valid' ? validPrescriptions :
+                        selectedPrescriptionType === 'expired' ? expiredPrescriptions :
+                        prescriptions;
   return (
     <div>
       <Toast ref={toast} />
       <div className="card">
         <DataTable
-          value={prescriptions}
+          value={dataToDisplay}
           responsiveLayout="scroll"
           selectionMode="single"
           onSelectionChange={(e) => handleClick(e.value)}
