@@ -73,7 +73,7 @@ async function getTopNDiagnosesByAverageStay(hospitalId, limitRows = 10) {
         GROUP BY 
             pr.diagnose_code, d.name
         ORDER BY 
-            average_stay_duration DESC
+            average_stay_duration DESC, d.name ASC
         FETCH FIRST :limitRows ROWS ONLY
       `,
       {
