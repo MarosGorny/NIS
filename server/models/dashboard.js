@@ -82,7 +82,63 @@ async function getBloodTypesByDonationsForHospital(hospitalId, paramDate) {
   }
 }
 
+async function getFreeSpacesInHospital(hospitalId) {
+  try {
+    let conn = await database.getConnection();
+
+    const result = await conn.execute(
+      `BEGIN
+          :result := GetFreeSpacesInHospital(:hospitalId);
+       END;`,
+      {
+        hospitalId: hospitalId,
+        result: { dir: database.oracledb.BIND_OUT, type: database.oracledb.CURSOR }
+      }
+    );
+
+    console.log(result)
+
+    const resultSet = result.outBinds.result;
+    const rows = await resultSet.getRows(); 
+    await resultSet.close();
+
+    return rows;
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
+async function getAppointmentsCountByDate(hospitalId, paramDate = null) {
+  try {
+    let conn = await database.getConnection();
+
+    let bindVars = {
+      hospitalId: hospitalId,
+      count: { dir: database.oracledb.BIND_OUT, type: database.oracledb.NUMBER }
+    };
+
+    let query = `BEGIN :count := GetAppointmentsCountByDate(:hospitalId`;
+
+    if (paramDate) {
+      query += `, TO_DATE(:paramDate, 'MM-DD-YYYY')`;
+      bindVars.paramDate = paramDate;
+    }
+
+    query += `); END;`;
+
+    const result = await conn.execute(query, bindVars);
+
+    return result.outBinds.count;
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
+
+
 module.exports = {
   getTop10PeopleWithMostBloodDonations,
   getBloodTypesByDonationsForHospital,
+  getFreeSpacesInHospital,
+  getAppointmentsCountByDate,
 };

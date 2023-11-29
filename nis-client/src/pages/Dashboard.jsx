@@ -7,10 +7,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Top10BloodDonationsTable from 'tables/Top10BloodDonationsTable';
 import { Calendar } from 'primereact/calendar';
+import HospitalSpaceTable from 'tables/HospitalSpaceTable';
 
 export default function Dashboard(props) {
   const [hospital, setHospital] = useState('');
   const [hospitalId, setHospitalId] = useState(0);
+  const [hospitalSpaceData, setHospitalSpaceData] = useState([]);
+  const [appointmentsCount, setAppointmentsCount] = useState(0);
+
   const [autoCompleteValue, setAutocompleteValue] = useState('');
   const [date, setDate] = useState(
     new Date()
@@ -30,6 +34,8 @@ export default function Dashboard(props) {
     if (!props?.isLoggedIn) {
       navigate('/login');
     }
+    fetchFreeSpaces();
+    fetchAppointmentsCount(1); //TODO: Set for hospitalId
   }, [props.isLoggedIn]);
 
   const fetchHospitals = (hospitalName) => {
@@ -42,6 +48,35 @@ export default function Dashboard(props) {
       .then((data) => {
         setHospital(data);
       });
+  };
+
+  const fetchFreeSpaces = () => {
+    //if (!hospitalId) return;
+    //TODO: Set for hospitalId
+    
+    const token = localStorage.getItem('logged-user');
+    const headers = { authorization: 'Bearer ' + token };
+
+    fetch(`dashboard/hospital/free-spaces/${1}`, { headers })
+      .then(response => response.json())
+      .then(data => {
+
+        setHospitalSpaceData(data);
+      })
+      .catch(error => console.error('Error fetching free spaces:', error));
+  };
+
+  const fetchAppointmentsCount = (hospitalId, date) => {
+    // Fetch logic here
+    const token = localStorage.getItem('logged-user');
+    const headers = { authorization: 'Bearer ' + token };
+
+    fetch(`/hospital/appointments-count/${1}/${date}`, { headers })
+      .then(response => response.json())
+      .then(count => {
+        setAppointmentsCount(count);
+      })
+      .catch(error => console.error('Error fetching appointments count:', error));
   };
 
   const handleHospitalSearch = (event) => {
@@ -82,14 +117,15 @@ export default function Dashboard(props) {
         yearRange="2019:2023"
       />
 
-      <DashboardNumberCard
-        title="Počet voľných lôžok"
-        content="123"
-      ></DashboardNumberCard>
+      <Card>
+        <HospitalSpaceTable data={hospitalSpaceData} />
+      </Card>
+
       <DashboardNumberCard
         title="Počet dnešných appointmentov"
-        content="123"
-      ></DashboardNumberCard>
+        content={appointmentsCount}
+      />
+
       <Card>
         <Top10BloodDonationsTable
           hospitalId={hospitalId}
