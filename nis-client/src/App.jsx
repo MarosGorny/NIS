@@ -5,6 +5,9 @@ import { Login } from './auth/login/Login';
 import Logout from './auth/logout/Logout';
 import PatientsTable from 'tables/PatientsTable';
 import PatientForm from 'forms/PatientForm';
+import ExaminationRoomTable from "./tables/ExaminationRoomTable";
+import ExaminationRoomForm from "./forms/ExaminationRoomForm";
+
 
 function App() {
   return (
@@ -20,6 +23,14 @@ function App() {
         <Route
           path="/patient/form"
           element={<PatientForm></PatientForm>}
+        ></Route>
+        <Route
+            path="/examination-room"
+            element={<ExaminationRoomTable></ExaminationRoomTable>}
+        ></Route>
+        <Route
+            path="/examination-room/form"
+            element={<ExaminationRoomForm></ExaminationRoomForm>}
         ></Route>
       </Routes>
     </div>
