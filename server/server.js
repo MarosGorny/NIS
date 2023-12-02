@@ -23,6 +23,14 @@ app.use('/examination', require('./routes/examination_route'));
 app.use('/staff', require('./routes/staff_route'));
 app.use('/municipality', require('./routes/mucipality_route'));
 app.use('/department', require('./routes/department_route'));
+app.use('/prescription', require('./routes/prescription_route'));
+app.use('/diagnose', require('./routes/diagnose_route'));
+app.use('/drug', require('./routes/drug_route'));
+app.use('/dashboard', require('./routes/dashboard_route'));
+app.use('/hospital', require('./routes/hospital_route'));
+app.use('/medicalRecord', require('./routes/medical_record_route'));
+app.use('/medicalProcedure', require('./routes/medical_procedure_route'));
+app.use('/vaccine', require('./routes/vaccine_route'));
 app.use(verifyJWT);
 
 server.listen(port, () => {
