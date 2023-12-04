@@ -107,18 +107,7 @@ function App() {
             path="/vaccine/form"
             element={<VaccineForm></VaccineForm>}
           ></Route>
-            <Route
-                path="/examination-room"
-                element={<ExaminationRoomTable></ExaminationRoomTable>}
-            ></Route>
-            <Route
-                path="/examination-room/form"
-                element={<ExaminationRoomForm></ExaminationRoomForm>}
-            ></Route>
-
         </Routes>
-
-
       </div>
     </div>
   );

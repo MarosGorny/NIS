@@ -129,8 +129,8 @@ export default function PatientPrescriptionsTable(props) {
 
   const prescriptionTypeSelectItems = [
     { label: 'Všetky recepty', value: 'all' },
-    { label: 'Platné recepty', value: 'valid' },
-    { label: 'Exspirované recepty', value: 'expired' },
+    { label: 'Valídne recepty', value: 'valid' },
+    { label: 'Expirované recepty', value: 'expired' },
   ];
 
   const onPrescriptionTypeChange = (e) => {
@@ -210,7 +210,7 @@ export default function PatientPrescriptionsTable(props) {
           <Link
             to="/prescription/form"
             state={{
-              patientId: props.patientId ? props.patientId : null,
+              patientId: props?.patientId ? props.patientId : null,
             }}
           >
             <Button
