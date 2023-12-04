@@ -1,8 +1,27 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
+import GetUserData from 'auth/get_user_data';
 
-const HospitalSpaceTable = ({ data }) => {
+const HospitalSpaceTable = ({ hospitalId }) => {
+  const [hospitalSpaces, setHospitalSpaces] = useState([]);
+
+  useEffect(() => {
+    fetchHospitalSpaces();
+  }, [hospitalId]);
+
+  const fetchHospitalSpaces = () => {
+    const token = localStorage.getItem('logged-user');
+    const headers = { authorization: 'Bearer ' + token };
+    const effectiveHospitalId = hospitalId || GetUserData(token).UserInfo.hospital;
+
+    fetch(`dashboard/hospital/free-spaces/${effectiveHospitalId}`, { headers })
+      .then(response => response.json())
+      .then(data => {
+        setHospitalSpaces(data);
+      })
+      .catch(error => console.error('Error fetching hospital spaces:', error));
+  };
 
   const calculateOccupiedSpaces = (rowData) => {
     return rowData.TOTAL_CAPACITY - rowData.FREE_SPACES;
@@ -19,10 +38,10 @@ const HospitalSpaceTable = ({ data }) => {
   };
 
   const getColorByPercentage = (percentage) => {
-    if (percentage >= 75) return 'red'; // High occupancy
-    if (percentage >= 50) return 'orange'; // Moderate occupancy
-    if (percentage >= 25) return 'blue'; // Low occupancy
-    return 'green'; // Very low occupancy
+    if (percentage >= 75) return 'red';
+    if (percentage >= 50) return 'orange';
+    if (percentage >= 25) return 'blue';
+    return 'green';
   };
 
   const renderHeader = () => {
@@ -37,7 +56,7 @@ const HospitalSpaceTable = ({ data }) => {
 
   return (
     <div className="card">
-      <DataTable value={data} responsiveLayout="scroll" header={header}>
+      <DataTable value={hospitalSpaces} responsiveLayout="scroll" header={header}>
         <Column field="DEPARTMENT_NAME" header="Názov oddelenia" />
         <Column field="FREE_SPACES" header="Voľné miesta" />
         <Column body={calculateOccupiedSpaces} header="Obsadené miesta" />
