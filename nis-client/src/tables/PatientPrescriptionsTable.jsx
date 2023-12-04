@@ -210,7 +210,7 @@ export default function PatientPrescriptionsTable(props) {
           <Link
             to="/prescription/form"
             state={{
-              patientId: props.patientId ? props.patientId : null,
+              patientId: props?.patientId ? props.patientId : null,
             }}
           >
             <Button
