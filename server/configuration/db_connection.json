@@ -5,5 +5,5 @@
   "host": "oracle.fri.uniza.sk",
   "dialect": "oracle",
   "port": 1521,
-  "connectString": "obelix.fri.uniza.sk:1521/orcl.fri.uniza.sk"
+  "connectString": "asterix.fri.uniza.sk:1521/orcl.fri.uniza.sk"
 }

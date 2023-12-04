@@ -138,9 +138,90 @@ async function generatePatientPrescriptions(prescription_id) {
   }
 }
 
+async function getAllValidPrescriptions(patientId) {
+  //TODO: Add hospitalId to the query
+  try {
+    let conn = await database.getConnection();
+    const result = await conn.execute(
+      `
+      SELECT           
+            pr.prescription_id,
+          pr.date_issued,
+          pr.date_expiry,
+          d.name AS valid_prescriptions
+      FROM prescription pr
+      JOIN patient p ON pr.patient_id = p.patient_id
+      JOIN diagnose d ON d.diagnose_code = pr.diagnose_code
+      WHERE CURRENT_DATE BETWEEN pr.date_issued 
+        AND pr.date_expiry 
+        AND p.hospital_id = 1
+        AND p.patient_id = :patientId
+      ORDER BY pr.date_issued
+      `,{ 
+        patientId: patientId
+        }
+    );
+    return result.rows;
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
+// Function to get all expired prescriptions for patients in a hospital
+async function getAllExpiredPrescriptions(patientId) {
+  //TODO: Add hospitalId to the query
+  try {
+    let conn = await database.getConnection();
+    const result = await conn.execute(
+      `
+      SELECT 
+        pr.prescription_id, 
+        pr.patient_id, 
+        pr.date_issued, 
+        pr.date_expiry
+      FROM prescription pr 
+      JOIN patient p ON pr.patient_id = p.patient_id
+      WHERE p.hospital_id = 1
+        AND pr.patient_id = :patientId
+        AND pr.date_expiry < CURRENT_DATE
+      ORDER BY pr.date_expiry DESC
+      `, {
+        patientId: patientId
+      }
+    );
+    return result.rows;
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
+
+async function isPrescriptionExpired(prescriptionId) {
+  try {
+    let conn = await database.getConnection();
+    const result = await conn.execute(
+      `
+      BEGIN
+        :return_value := IsPrescriptionExpired(:prescriptionId);
+      END;
+      `,
+      {
+        prescriptionId: prescriptionId,
+        return_value: { dir: database.oracledb.BIND_OUT, type: database.oracledb.STRING }
+      }
+    );
+    return result.outBinds.return_value;
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
 module.exports = {
   getPrescriptionsForPatient,
   generatePatientPrescriptions,
   addPrescription,
   deletePrescription,
+  getAllValidPrescriptions,
+  getAllExpiredPrescriptions,
+  isPrescriptionExpired
 };
