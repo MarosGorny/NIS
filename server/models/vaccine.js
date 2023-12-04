@@ -3,9 +3,6 @@ const database = require('../database/database');
 async function insertVaccine(body) {
   try {
     let conn = await database.getConnection();
-    const options = { year: 'numeric', month: 'numeric', day: 'numeric' };
-    const vaccinationDate = new Date(body.date_vaccination);
-    const reVaccinationDate = new Date(body.date_re_vaccination);
 
     const result = await conn.execute(
       `
@@ -17,11 +14,8 @@ async function insertVaccine(body) {
         vaccineId: body.vaccine_id,
         patientId: body.patient_id,
         typeVaccination: body.type_vaccination,
-        dateVaccination: vaccinationDate.toLocaleDateString('us-US', options),
-        dateReVaccination: reVaccinationDate.toLocaleDateString(
-          'us-US',
-          options
-        ),
+        dateVaccination: new Date(body.date_vaccination),
+        dateReVaccination: new Date(body.date_re_vaccination),
         vaccineDose: body.dose_vaccine.VACCINE_DOSE_ID
           ? body.dose_vaccine.VACCINE_DOSE_ID
           : body.dose_vaccine,

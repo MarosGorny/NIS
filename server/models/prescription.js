@@ -3,8 +3,6 @@ const database = require('../database/database');
 async function addPrescription(body) {
   try {
     let conn = await database.getConnection();
-    const options = { year: 'numeric', month: 'numeric', day: 'numeric' };
-    const date = new Date(body.date_expiry);
 
     const drugArray = body.drugs;
 
@@ -22,7 +20,7 @@ async function addPrescription(body) {
       staffId: body.staff_id,
       patientId: body.patient_id,
       diagnose: body.diagnose,
-      date_expiry: date.toLocaleDateString('us-US', options),
+      date_expiry: new Date(body.date_expiry),
     };
 
     const sqlStatement = `
