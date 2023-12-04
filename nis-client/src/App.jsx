@@ -5,6 +5,11 @@ import { Login } from './auth/login/Login';
 import Logout from './auth/logout/Logout';
 import PatientsTable from 'tables/PatientsTable';
 import PatientForm from 'forms/PatientForm';
+
+import ExaminationRoomTable from "./tables/ExaminationRoomTable";
+import ExaminationRoomForm from "./forms/ExaminationRoomForm";
+
+
 import PrescriptionForm from 'forms/PrescriptionForm';
 import PatientProfile from 'pages/PatientProfile';
 import Dashboard from 'pages/Dashboard';
@@ -12,6 +17,7 @@ import MedicalRecordForm from 'forms/MedicalRecordForm';
 import VaccineForm from 'forms/VaccineForm';
 import { Button } from 'primereact/button';
 import { Register } from 'auth/register/Register';
+
 
 function App() {
   const navigate = useNavigate();
