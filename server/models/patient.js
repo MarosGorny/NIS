@@ -17,6 +17,38 @@ async function getPatientById(patientId) {
   }
 }
 
+async function getPatientFormDataByPatientId(patientId) {
+  try {
+    let conn = await database.getConnection();
+
+    const result = await conn.execute(
+      `
+      SELECT 
+          pe.person_info.name name,
+          pe.person_info.surname surname,
+          pe.birth_number,
+          pe.postal_code,
+          pe.person_info.address address,
+          p.date_from,
+          pe.person_info.email email
+      FROM 
+          patient p
+      JOIN 
+          person pe ON pe.birth_number = p.birth_number
+      WHERE 
+        patient_id = :patientId
+      `,
+      {
+        patientId: patientId,
+      }
+    );
+
+    return result.rows[0];
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
 async function getVaccinationsHistoryByPatientId(patientId) {
   try {
     let conn = await database.getConnection();
@@ -125,4 +157,5 @@ module.exports = {
   addPatient,
   deletePatient,
   getVaccinationsHistoryByPatientId,
+  getPatientFormDataByPatientId,
 };

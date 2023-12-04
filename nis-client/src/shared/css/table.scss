@@ -16,3 +16,23 @@ div.table-header {
         row-gap: 0.5rem;
     }
 }
+
+div.table-button-column-container {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+tr[role="row"] {
+    height: auto !important;
+}
+
+span.table-long-string-column {
+    width: 100%;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

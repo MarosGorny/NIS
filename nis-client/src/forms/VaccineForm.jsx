@@ -172,7 +172,7 @@ export default function VaccineForm() {
   };
 
   return (
-    <div>
+    <div className="form">
       <Toast ref={toast} />
       <Form
         onSubmit={onSubmit}
@@ -293,7 +293,7 @@ export default function VaccineForm() {
                 </div>
               )}
             />
-            <Button type="submit">Submit</Button>
+            <Button type="submit" label="Odoslať" />
           </form>
         )}
       />

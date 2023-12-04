@@ -12,6 +12,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import GetUserData from '../auth/get_user_data';
+import { Tooltip } from 'primereact/tooltip';
 
 export default function MedicalRecordTable(props) {
   const [globalFilterValue, setGlobalFilterValue] = useState('');
@@ -152,10 +153,17 @@ export default function MedicalRecordTable(props) {
   };
 
   const renderButtonColumn = (rowData) => (
-    <Button
-      icon="pi pi-pencil"
-      onClick={() => handleEditButtonClick(rowData)}
-    />
+    <div className="table-button-column-container">
+      <Button
+        tooltip="Upraviť"
+        icon="pi pi-pencil"
+        onClick={() => handleEditButtonClick(rowData)}
+      />
+    </div>
+  );
+
+  const renderProcedureNameColumn = (procedureName) => (
+    <span className="table-long-string-column">{procedureName}</span>
   );
 
   const formatDate = (date) => {
@@ -181,6 +189,7 @@ export default function MedicalRecordTable(props) {
       field: 'PROCEDURE_NAME',
       header: 'Procedúra',
       filter: true,
+      body: (value) => renderProcedureNameColumn(value?.PROCEDURE_NAME),
     },
     { field: '', header: '', body: renderButtonColumn, filter: false },
   ];

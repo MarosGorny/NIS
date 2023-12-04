@@ -7,7 +7,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 
-export const Login = () => {
+export const Register = () => {
   const navigate = useNavigate();
   const defaultValues = {
     userid: '',
@@ -35,13 +35,18 @@ export const Login = () => {
         pwd: data.password,
       }),
     };
-    fetch('/auth/login', requestOptions)
+    fetch('/auth/register', requestOptions)
       .then((response) => response.json())
       .then((res) => {
-        localStorage.setItem('logged-user', res.accessToken);
-        window.location.reload();
+        if (res.message !== undefined) {
+          navigate('/logout');
+          navigate('/register');
+          alert(res.message);
+        } else {
+          navigate('/login');
+          window.location.reload();
+        }
       });
-
     reset();
   };
 
@@ -54,7 +59,7 @@ export const Login = () => {
   return (
     <div id="auth-page-container">
       <div id="auth-form-container">
-        <h1>Prihlásenie</h1>
+        <h1>Registrácia</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
           <div className="auth-form-inputs-container">
             <div className="auth-form-input-field-container">
@@ -116,16 +121,16 @@ export const Login = () => {
             </div>
           </div>
           <div className="auth-form-buttons-container">
-            <Link to="/register">
+            <Link to="/login">
               <Button
                 type="button"
-                label="Nemáte účet?"
+                label="Už máte účet?"
                 className="p-button-secondary p-button-link p-button-text"
               />
             </Link>
             <Button
               type="submit"
-              label="Prihlásiť"
+              label="Registrovať"
               style={{ marginRight: '1.25rem' }}
             />
           </div>
