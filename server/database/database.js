@@ -29,6 +29,7 @@ async function getConnection() {
   }
 }
 
+
 module.exports = {
   oracledb,
   getConnection,

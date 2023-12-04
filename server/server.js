@@ -19,7 +19,10 @@ app.use(
 app.use(cookieParser());
 app.use('/auth', require('./routes/auth_route'));
 app.use('/patient', require('./routes/patient_route'));
+app.use('/examination', require('./routes/examination_route'));
+app.use('/staff', require('./routes/staff_route'));
 app.use('/municipality', require('./routes/mucipality_route'));
+app.use('/department', require('./routes/department_route'));
 app.use('/prescription', require('./routes/prescription_route'));
 app.use('/diagnose', require('./routes/diagnose_route'));
 app.use('/drug', require('./routes/drug_route'));
