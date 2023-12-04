@@ -10,6 +10,12 @@ router.get(
   controller.getPatientsByHospital
 );
 router.get(
+  '/formData/:id',
+  //verify.verifyRoles(1, 3),
+  //verify.checkForCorrectId(),
+  controller.getPatientFormDataByPatientId
+);
+router.get(
   '/:id/vaccinationHistory',
   //verify.verifyRoles(1, 3),
   //verify.checkForCorrectId(),

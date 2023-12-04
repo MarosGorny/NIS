@@ -10,6 +10,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import GetUserData from '../auth/get_user_data';
+import { Dropdown } from 'primereact/dropdown';
+import { Tooltip } from 'primereact/tooltip';
 
 export default function PatientPrescriptionsTable(props) {
   const [globalFilterValue, setGlobalFilterValue] = useState('');
@@ -17,6 +19,11 @@ export default function PatientPrescriptionsTable(props) {
   const [prescriptions, setPrescriptions] = useState(
     Array.from({ length: 50 }),
   );
+
+  const [selectedPrescriptionType, setSelectedPrescriptionType] = useState('all');
+  const [validPrescriptions, setValidPrescriptions] = useState([]);
+  const [expiredPrescriptions, setExpiredPrescriptions] = useState([]);
+
   const [lazyLoading, setLazyLoading] = useState(false);
   const navigate = useNavigate();
   const toast = useRef(null);
@@ -77,6 +84,66 @@ export default function PatientPrescriptionsTable(props) {
     });
   };
 
+  const loadValidPrescriptions = async () => {
+    setLazyLoading(true);
+    const token = localStorage.getItem('logged-user');
+    const tokenParsedData = GetUserData(token);
+    const headers = { authorization: 'Bearer ' + token };
+    const userId = props?.patientId
+      ? props?.patientId
+      : tokenParsedData.UserInfo.userId;
+
+    fetch(`/prescription/valid/patient/${userId}`, { headers })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('Fetched valid prescriptions:', data); // Add this line for debugging
+        if (Array.isArray(data)) {
+          setValidPrescriptions(data);
+        } else {
+          console.error('Received data is not an array:', data);
+        }
+        setLazyLoading(false);
+      });
+  };
+
+  const loadExpiredPrescriptions = async () => {
+    setLazyLoading(true);
+    const token = localStorage.getItem('logged-user');
+    const tokenParsedData = GetUserData(token);
+    const headers = { authorization: 'Bearer ' + token };
+    const userId = props?.patientId
+      ? props?.patientId
+      : tokenParsedData.UserInfo.userId;
+
+    fetch(`/prescription/expired/patient/${userId}`, { headers })
+      .then((response) => response.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setExpiredPrescriptions(data);
+        } else {
+          console.error('Received data is not an array:', data);
+        }
+        setLazyLoading(false);
+      });
+  };
+
+  const prescriptionTypeSelectItems = [
+    { label: 'Všetky recepty', value: 'all' },
+    { label: 'Valídne recepty', value: 'valid' },
+    { label: 'Expirované recepty', value: 'expired' },
+  ];
+
+  const onPrescriptionTypeChange = (e) => {
+    setSelectedPrescriptionType(e.value);
+    if (e.value === 'valid') {
+      loadValidPrescriptions();
+    } else if (e.value === 'expired') {
+      loadExpiredPrescriptions();
+    } else {
+      loadPrescriptionsLazy();
+    }
+  };
+
   const showSuccessDelete = () => {
     toast.current.show({
       severity: 'success',
@@ -126,6 +193,12 @@ export default function PatientPrescriptionsTable(props) {
       <div className="table-header">
         <span>Recepty</span>
         <div className="table-header-right">
+          <Dropdown
+            value={selectedPrescriptionType}
+            options={prescriptionTypeSelectItems}
+            onChange={onPrescriptionTypeChange}
+            placeholder="Select Prescription Type"
+          />
           <span className="p-input-icon-left">
             <i className="pi pi-search" />
             <InputText
@@ -175,18 +248,25 @@ export default function PatientPrescriptionsTable(props) {
   };
 
   const renderButtonColumn = (rowData) => (
-    <>
-      <Button icon="pi pi-pencil" onClick={() => handleClick(rowData)} />
+    <div className="table-button-column-container">
       <Button
+        tooltip="Upraviť"
+        icon="pi pi-pencil"
+        onClick={() => handleClick(rowData)}
+      />
+      <Button
+        tooltip="Generovať XML"
         icon="pi pi-cloud-download"
         onClick={() => generateXML(rowData)}
       />
       <Button
+        tooltip="Odstrániť recept"
+        tooltipOptions={{ position: 'left' }}
         icon="pi pi-times"
         className="p-button-danger"
         onClick={() => deletePrescription(rowData)}
       />
-    </>
+    </div>
   );
 
   const formatDate = (date) => {
@@ -233,12 +313,21 @@ export default function PatientPrescriptionsTable(props) {
   };
 
   const header = renderHeader();
+  const dataToDisplay = selectedPrescriptionType === 'valid' ? validPrescriptions :
+                        selectedPrescriptionType === 'expired' ? expiredPrescriptions :
+                        prescriptions;
   return (
     <div>
       <Toast ref={toast} />
+      <Tooltip
+        target=".b-dt-edit-tooltip"
+        content="Upraviť"
+        mouseTrack
+        mouseTrackLeft={10}
+      />
       <div className="card">
         <DataTable
-          value={prescriptions}
+          value={dataToDisplay}
           responsiveLayout="scroll"
           selectionMode="single"
           onSelectionChange={(e) => handleClick(e.value)}

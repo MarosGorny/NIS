@@ -23,16 +23,29 @@ async function insertUser(body) {
     let conn = await database.getConnection();
 
     const result = await conn.execute(
-      `INSERT INTO users VALUES(:userid, :pwd, null, :role)`,
+      `INSERT INTO users VALUES(:userid, :pwd, null)`,
       {
         userid: body.userid,
         pwd: body.pwd,
-        role: body.role,
       },
       { autoCommit: true }
     );
 
     console.log('Rows inserted ' + result.rowsAffected);
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
+async function userExistsInDB(userid) {
+  try {
+    let conn = await database.getConnection();
+    const result = await conn.execute(
+      `SELECT COUNT(*) as COUNT FROM staff where staff_id = :userid`,
+      [userid]
+    );
+
+    return result.rows[0].COUNT === 0;
   } catch (err) {
     throw new Error('Database error: ' + err);
   }
@@ -99,4 +112,5 @@ module.exports = {
   getUserByUserId,
   getUserByRefreshToken,
   updateUserRefreshToken,
+  userExistsInDB,
 };

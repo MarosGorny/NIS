@@ -29,11 +29,13 @@ export default function PrescriptionForm() {
     fetchDiagnoses();
   }, []);
 
-  const handleAddDrug = () => {
+  const handleAddDrug = (event) => {
+    event.preventDefault();
     setDrugs([...drugs, { drugCode: '', dosage: 0 }]);
   };
 
-  const handleRemoveDrug = (index) => {
+  const handleRemoveDrug = (event, index) => {
+    event.preventDefault();
     const updateDrugs = [...drugs];
     updateDrugs.splice(index, 1);
     setDrugs(updateDrugs);
@@ -129,7 +131,7 @@ export default function PrescriptionForm() {
   };
 
   return (
-    <div>
+    <div className="form prescription-form">
       <Toast ref={toast} />
       <Form
         onSubmit={onSubmit}
@@ -197,11 +199,11 @@ export default function PrescriptionForm() {
               )}
             />
             {drugs.map((drug, index) => (
-              <div key={index}>
+              <div className="precription-drugs-container" key={index}>
                 <Field
                   name={`drugs[${index}].drugCode`}
                   render={({ input, meta }) => (
-                    <div className="field col-12">
+                    <div>
                       <span className="p-float-label">
                         <AutoComplete
                           {...input}
@@ -231,7 +233,7 @@ export default function PrescriptionForm() {
                 <Field
                   name={`drugs[${index}].dosage`}
                   render={({ input, meta }) => (
-                    <div className="field col-12">
+                    <div>
                       <span className="p-float-label">
                         <InputNumber
                           {...input}
@@ -262,17 +264,22 @@ export default function PrescriptionForm() {
                   )}
                 />
 
-                <Button type="button" onClick={() => handleRemoveDrug(index)}>
-                  Remove
+                <Button
+                  disabled={drugs.length === 1}
+                  className="p-button-danger"
+                  type="button"
+                  onClick={(event) => handleRemoveDrug(event, index)}
+                >
+                  Remove drug
                 </Button>
               </div>
             ))}
 
-            <Button type="button" onClick={handleAddDrug}>
+            <Button type="button" onClick={(event) => handleAddDrug(event)}>
               Add Drug
             </Button>
 
-            <Button type="submit">Submit</Button>
+            <Button type="submit" label="Odoslať" />
           </form>
         )}
       />

@@ -215,7 +215,7 @@ export default function MedicalRecordForm() {
   };
 
   return (
-    <div>
+    <div className="form">
       <Toast ref={toast} />
       <Form
         onSubmit={onSubmit}
@@ -351,7 +351,7 @@ export default function MedicalRecordForm() {
                 }
               />
             </div>
-            <Button type="submit">Submit</Button>
+            <Button type="submit" label="Odoslať" />
           </form>
         )}
       />

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { AutoComplete } from 'primereact/autocomplete';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
@@ -8,11 +9,22 @@ import { classNames } from 'primereact/utils';
 import React, { useEffect, useRef, useState } from 'react';
 import { Field, Form } from 'react-final-form';
 import GetUserData from '../auth/get_user_data';
-import { useNavigate } from 'react-router';
-export default function PatientForm() {
+import { useLocation, useNavigate } from 'react-router';
+export default function PatientForm(props) {
   const [municipalities, setMunicipalities] = useState([]);
   const [filteredPostalCode, setFilteredPostalCode] = useState(null);
+  const [patientId, setPatientId] = useState(0);
+  const [formInitialValues, setFormInitialValues] = useState({
+    birth_number: '',
+    email: '',
+    name: '',
+    surname: '',
+    postal_code: '',
+    address: '',
+    date_from: new Date(),
+  });
   const toast = useRef(null);
+  const { state } = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,6 +38,43 @@ export default function PatientForm() {
         setMunicipalities(array);
       });
   }, []); // eslint-disable-line;
+
+  useEffect(() => {
+    if (!state) return;
+    setPatientId(state.patientId);
+  }, []);
+
+  useEffect(() => {
+    if (!patientId) return;
+    fetchFormInitialValues();
+  }, [patientId]);
+
+  const fetchFormInitialValues = () => {
+    if (!patientId) return;
+
+    const token = localStorage.getItem('logged-user');
+    const headers = { authorization: 'Bearer ' + token };
+    fetch(`/patient/formData/${patientId}`, {
+      headers,
+    })
+      .then((response) => response.json())
+      .then(async (data) => {
+        const municipality = municipalities.find(
+          (m) => m.POSTAL_CODE === data.POSTAL_CODE,
+        );
+
+        const initialValuesFromDb = {
+          birth_number: data.BIRTH_NUMBER,
+          email: data.EMAIL,
+          name: data.NAME,
+          surname: data.SURNAME,
+          postal_code: municipality,
+          address: data.ADDRESS,
+          date_from: new Date(data.DATE_FROM),
+        };
+        setFormInitialValues(initialValuesFromDb);
+      });
+  };
 
   const validate = (data) => {
     let errors = {};
@@ -62,6 +111,7 @@ export default function PatientForm() {
       },
 
       body: JSON.stringify({
+        patient_id: patientId || null,
         birth_number: data.birth_number,
         name: data.name,
         surname: data.surname,
@@ -114,22 +164,13 @@ export default function PatientForm() {
   };
 
   return (
-    <div
-      style={{ width: '100%', marginTop: '2rem' }}
-      className="p-fluid grid formgrid"
-    >
+    <div className="form">
       <Toast ref={toast} />
 
       <div className="field col-12">
         <Form
           onSubmit={onSubmit}
-          initialValues={{
-            birth_number: '',
-            email: '',
-            name: '',
-            surname: '',
-            postal_code: '',
-          }}
+          initialValues={formInitialValues}
           validate={validate}
           render={({ handleSubmit }) => (
             <form onSubmit={handleSubmit} className="p-fluid">
@@ -301,7 +342,7 @@ export default function PatientForm() {
                     <Calendar
                       id="basic"
                       {...input}
-                      dateFormat="dd.mm.yy"
+                      dateFormat="dd. mm. yy"
                       mask="99.99.9999"
                       showIcon
                       showTime
@@ -314,19 +355,7 @@ export default function PatientForm() {
                 )}
               />
 
-              <div
-                className="field col-12 "
-                style={{ justifyContent: 'center', display: 'grid' }}
-              >
-                <Button
-                  type="submit"
-                  style={{ width: '50vh' }}
-                  className="p-button-lg"
-                  label="Odoslať"
-                  icon="pi pi-check"
-                  iconPos="right"
-                />
-              </div>
+              <Button type="submit" label="Odoslať" />
             </form>
           )}
         />
