@@ -99,24 +99,33 @@ export default function Dashboard(props) {
 
   return (
     <>
-      <AutoComplete
-        value={autoCompleteValue}
-        suggestions={hospital}
-        completeMethod={(e) => handleHospitalSearch(e)}
-        field="NAME"
-        onChange={(e) => setAutocompleteValue(e.value)}
-        placeholder="Zadajte názov nemocnice"
-        onKeyDown={handleEnter}
-      />
-
-      <Calendar
-        value={date}
-        onChange={(e) => formatDate(e.value)}
-        view="year"
-        dateFormat="yy"
-        yearNavigator
-        yearRange="2019:2023"
-      />
+      <div className="dashboard-filter">
+        <div>
+          <label htmlFor="hospitalName">Nemocnica</label>
+          <AutoComplete
+            name="hospitalName"
+            value={autoCompleteValue}
+            suggestions={hospital}
+            completeMethod={(e) => handleHospitalSearch(e)}
+            field="NAME"
+            onChange={(e) => setAutocompleteValue(e.value)}
+            placeholder="Zadajte názov nemocnice"
+            onKeyDown={handleEnter}
+          />
+        </div>
+        <div>
+          <label htmlFor="year">Rok</label>
+          <Calendar
+            name="year"
+            value={date}
+            onChange={(e) => formatDate(e.value)}
+            view="year"
+            dateFormat="yy"
+            yearNavigator
+            yearRange="2019:2023"
+          />
+        </div>
+      </div>
 
       <DashboardNumberCard
         title="Počet dnešných appointmentov"
@@ -128,10 +137,7 @@ export default function Dashboard(props) {
       </Card>
 
       <Card>
-        <TopNDiagnosesTable
-          hospitalId={hospitalId}
-          limitRows={10}
-        />
+        <TopNDiagnosesTable hospitalId={hospitalId} limitRows={10} />
       </Card>
 
       <Card>

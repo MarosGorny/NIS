@@ -1,0 +1,36 @@
+div.form {
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    margin: 0 auto;
+    margin-top: 1.5rem;
+
+    &.prescription-form {
+        div.precription-drugs-container {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0 auto;
+            row-gap: 1.5rem;
+            column-gap: 0.5rem;
+
+            Button {
+                width: 100px;
+            }
+        }
+    }
+    
+    form {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        margin: 0 auto;
+        row-gap: 1.5rem;
+    }
+}

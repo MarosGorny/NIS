@@ -9,6 +9,16 @@ module.exports = {
       res.status(403).send(err);
     });
   },
+  getPatientFormDataByPatientId: (req, res) => {
+    const patient = require('../models/patient');
+    (async () => {
+      return_val = await patient.getPatientFormDataByPatientId(req.params.id);
+      res.status(200).json(return_val);
+    })().catch((err) => {
+      console.error(err);
+      res.status(403).send(err);
+    });
+  },
   getVaccinationsHistoryByPatientId: (req, res) => {
     const patient = require('../models/patient');
     (async () => {

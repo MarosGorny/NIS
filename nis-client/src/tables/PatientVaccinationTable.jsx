@@ -10,6 +10,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import GetUserData from '../auth/get_user_data';
+import { Tooltip } from 'primereact/tooltip';
 
 export default function PatientVaccinationTable(props) {
   const [globalFilterValue, setGlobalFilterValue] = useState('');
@@ -85,7 +86,7 @@ export default function PatientVaccinationTable(props) {
   const handleClick = (value) => {
     navigate('/vaccine/form', {
       state: {
-        vaccineId: value,
+        vaccineId: value.VACCINATION_ID,
         patientId: props.patientId ? props.patientId : null,
       },
     });
@@ -145,18 +146,20 @@ export default function PatientVaccinationTable(props) {
   };
 
   const renderButtonColumn = (rowData) => (
-    // TODO - generate button maybe
-    <>
+    <div className="table-button-column-container">
       <Button
+        tooltip="Upraviť"
         icon="pi pi-pencil"
-        onClick={() => handleClick(rowData.VACCINATION_ID)}
+        onClick={() => handleClick(rowData)}
       />
       <Button
+        tooltip="Odstrániť vakcináciu"
+        tooltipOptions={{ position: 'left' }}
         icon="pi pi-times"
         className="p-button-danger"
         onClick={() => deleteVaccination(rowData)}
       />
-    </>
+    </div>
   );
 
   const formatDate = (date) => {

@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const userModel = require('../models/user');
+const user = require('../models/user');
 const patientModel = require('../models/patient');
 const staffModel = require('../models/staff');
 var jwt = require('jsonwebtoken');
@@ -10,12 +10,15 @@ const handleRegister = async (req, res) => {
   if (!userid || !pwd)
     return res
       .status(400)
-      .json({ message: 'Username and password are required.' });
-  // check for duplicate usernames in the db
+      .json({ message: 'Prihlasovacie číslo a heslo sú povinné.' });
 
   try {
-    if (await userModel.userExists(userid)) {
+    if (await user.userExists(userid)) {
       return res.status(409).json({ message: `Already exists` });
+    } else if (await user.userExistsInDB(userid)) {
+      return res.status(409).json({
+        message: `Nenašiel sa používateľ s týmto prihlasovacím číslom.`,
+      });
     } else {
       bcrypt.genSalt(10, function (err, salt) {
         if (err) {
@@ -26,27 +29,13 @@ const handleRegister = async (req, res) => {
           if (err) {
             return next(err);
           }
-          const accessToken = jwt.sign(
-            {
-              UserInfo: {
-                userid: userid,
-                role: 3,
-              },
-            },
-            process.env.ACCESS_TOKEN_SECRET,
-            { expiresIn: '3600s' }
-          );
 
           let body = req.body;
           body.userid = userid;
-          body.role = 3;
           body.pwd = hash;
-          body.accessToken = accessToken;
 
-          userModel.insertUser(body);
-          return res
-            .status(200)
-            .json({ success: `New user created!`, accessToken: accessToken });
+          user.insertUser(body);
+          return res.status(200).json({ success: `Používateľ vytvorený` });
         });
       });
     }
@@ -62,9 +51,9 @@ const handleLogin = async (req, res) => {
       .status(400)
       .json({ message: 'Username and password are required.' });
 
-  if (!(await userModel.userExists(userid))) return res.sendStatus(401); //Unauthorized
+  if (!(await user.userExists(userid))) return res.sendStatus(401); //Unauthorized
 
-  const foundUser = await userModel.getUserByUserId(userid);
+  const foundUser = await user.getUserByUserId(userid);
   const match = await bcrypt.compare(pwd, foundUser.PASS);
   if (match == true) {
     const patient = await patientModel.getPatientById(userid);
@@ -96,7 +85,7 @@ const handleLogin = async (req, res) => {
       { expiresIn: '1d' }
     );
 
-    userModel.updateUserRefreshToken({
+    user.updateUserRefreshToken({
       userid: foundUser.USER_ID,
       refresh_token: refreshToken,
     });
@@ -115,14 +104,14 @@ const handleLogout = async (req, res) => {
   if (!cookies?.jwt) return res.sendStatus(204); //No content
   const refreshToken = cookies.jwt;
   // Is refreshToken in db?
-  const foundUser = await userModel.getUserByRefreshToken(refreshToken);
+  const foundUser = await user.getUserByRefreshToken(refreshToken);
   if (!foundUser) {
     res.clearCookie('jwt', { httpOnly: true }); // vymazat sameSite, secure ak budu bugy
     return res.sendStatus(204);
   }
 
   // Delete refreshToken in db
-  userModel.updateUserRefreshToken({
+  user.updateUserRefreshToken({
     userid: foundUser.USER_ID,
     refresh_token: null,
   });
@@ -137,7 +126,7 @@ const handleRefreshToken = async (req, res) => {
 
   const refreshToken = cookies.jwt;
 
-  const foundUser = await userModel.getUserByRefreshToken(refreshToken);
+  const foundUser = await user.getUserByRefreshToken(refreshToken);
   if (!foundUser) return res.sendStatus(403); //Forbidden
   // evaluate jwt
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {

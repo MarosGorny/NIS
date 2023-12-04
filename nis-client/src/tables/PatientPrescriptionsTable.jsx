@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import GetUserData from '../auth/get_user_data';
 import { Dropdown } from 'primereact/dropdown';
+import { Tooltip } from 'primereact/tooltip';
 
 export default function PatientPrescriptionsTable(props) {
   const [globalFilterValue, setGlobalFilterValue] = useState('');
@@ -88,21 +89,21 @@ export default function PatientPrescriptionsTable(props) {
     const token = localStorage.getItem('logged-user');
     const tokenParsedData = GetUserData(token);
     const headers = { authorization: 'Bearer ' + token };
-    const userId = props.patientId
-    ? props.patientId
-    : tokenParsedData.UserInfo.userId;
+    const userId = props?.patientId
+      ? props?.patientId
+      : tokenParsedData.UserInfo.userId;
 
     fetch(`/prescription/valid/patient/${userId}`, { headers })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log('Fetched valid prescriptions:', data); // Add this line for debugging
-      if (Array.isArray(data)) {
-        setValidPrescriptions(data);
-      } else {
-        console.error('Received data is not an array:', data);
-      }
-      setLazyLoading(false);
-    });
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('Fetched valid prescriptions:', data); // Add this line for debugging
+        if (Array.isArray(data)) {
+          setValidPrescriptions(data);
+        } else {
+          console.error('Received data is not an array:', data);
+        }
+        setLazyLoading(false);
+      });
   };
 
   const loadExpiredPrescriptions = async () => {
@@ -110,14 +111,14 @@ export default function PatientPrescriptionsTable(props) {
     const token = localStorage.getItem('logged-user');
     const tokenParsedData = GetUserData(token);
     const headers = { authorization: 'Bearer ' + token };
-    const userId = props.patientId
-    ? props.patientId
-    : tokenParsedData.UserInfo.userId;
+    const userId = props?.patientId
+      ? props?.patientId
+      : tokenParsedData.UserInfo.userId;
 
     fetch(`/prescription/expired/patient/${userId}`, { headers })
       .then((response) => response.json())
       .then((data) => {
-        if(Array.isArray(data)) {
+        if (Array.isArray(data)) {
           setExpiredPrescriptions(data);
         } else {
           console.error('Received data is not an array:', data);
@@ -127,9 +128,9 @@ export default function PatientPrescriptionsTable(props) {
   };
 
   const prescriptionTypeSelectItems = [
-    { label: 'All Prescriptions', value: 'all' },
-    { label: 'Valid Prescriptions', value: 'valid' },
-    { label: 'Expired Prescriptions', value: 'expired' },
+    { label: 'Všetky recepty', value: 'all' },
+    { label: 'Valídne recepty', value: 'valid' },
+    { label: 'Expirované recepty', value: 'expired' },
   ];
 
   const onPrescriptionTypeChange = (e) => {
@@ -247,18 +248,25 @@ export default function PatientPrescriptionsTable(props) {
   };
 
   const renderButtonColumn = (rowData) => (
-    <>
-      <Button icon="pi pi-pencil" onClick={() => handleClick(rowData)} />
+    <div className="table-button-column-container">
       <Button
+        tooltip="Upraviť"
+        icon="pi pi-pencil"
+        onClick={() => handleClick(rowData)}
+      />
+      <Button
+        tooltip="Generovať XML"
         icon="pi pi-cloud-download"
         onClick={() => generateXML(rowData)}
       />
       <Button
+        tooltip="Odstrániť recept"
+        tooltipOptions={{ position: 'left' }}
         icon="pi pi-times"
         className="p-button-danger"
         onClick={() => deletePrescription(rowData)}
       />
-    </>
+    </div>
   );
 
   const formatDate = (date) => {
@@ -311,6 +319,12 @@ export default function PatientPrescriptionsTable(props) {
   return (
     <div>
       <Toast ref={toast} />
+      <Tooltip
+        target=".b-dt-edit-tooltip"
+        content="Upraviť"
+        mouseTrack
+        mouseTrackLeft={10}
+      />
       <div className="card">
         <DataTable
           value={dataToDisplay}

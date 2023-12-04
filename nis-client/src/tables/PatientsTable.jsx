@@ -80,6 +80,15 @@ export default function PatientsTable() {
     setSelectedRow(value);
   };
 
+  const handleEditClick = (value) => {
+    console.log(value);
+    navigate('/patient/form', {
+      state: {
+        patientId: value.PATIENT_ID,
+      },
+    });
+  };
+
   const showSuccess = () => {
     toast.current.show({
       severity: 'success',
@@ -229,11 +238,20 @@ export default function PatientsTable() {
   };
 
   const deletePatientAction = (rowData) => (
-    <Button
-      icon="pi pi-times"
-      onClick={() => deletePatient(rowData)}
-      className="p-button-danger"
-    />
+    <div className="table-button-column-container">
+      <Button
+        tooltip="Upraviť"
+        icon="pi pi-pencil"
+        onClick={() => handleEditClick(rowData)}
+      />
+      <Button
+        tooltip="Odstrániť pacienta"
+        tooltipOptions={{ position: 'left' }}
+        icon="pi pi-times"
+        className="p-button-danger"
+        onClick={() => deletePatient(rowData)}
+      />
+    </div>
   );
 
   const columns = [
