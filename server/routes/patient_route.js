@@ -27,6 +27,7 @@ router.post(
   //verify.checkForCorrectId(),
   controller.addPatient
 );
+router.post('/update', controller.updatePatient);
 router.post(
   '/delete',
   //verify.verifyRoles(1, 3),

@@ -31,6 +31,20 @@ module.exports = {
       res.status(403).send(err);
     });
   },
+
+  updatePatient: (req, res) => {
+    const patient = require('../models/patient');
+    (async () => {
+      try {
+        const return_val = await patient.updatePatient(req.body);
+        res.status(200).json(return_val);
+      } catch (err) {
+        console.error(err);
+        res.status(403).send(err);
+      }
+    })();
+  },
+
   addPatient: (req, res) => {
     const patient = require('../models/patient');
     (async () => {
