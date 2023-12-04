@@ -129,8 +129,8 @@ export default function PatientPrescriptionsTable(props) {
 
   const prescriptionTypeSelectItems = [
     { label: 'Všetky recepty', value: 'all' },
-    { label: 'Valídne recepty', value: 'valid' },
-    { label: 'Expirované recepty', value: 'expired' },
+    { label: 'Platné recepty', value: 'valid' },
+    { label: 'Exspirované recepty', value: 'expired' },
   ];
 
   const onPrescriptionTypeChange = (e) => {

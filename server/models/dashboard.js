@@ -1,3 +1,4 @@
+const { log } = require('console');
 const database = require('../database/database');
 
 async function getTop10PeopleWithMostBloodDonations(hospitalId, paramDate) {
@@ -137,8 +138,6 @@ async function getFreeSpacesInHospital(hospitalId) {
         result: { dir: database.oracledb.BIND_OUT, type: database.oracledb.CURSOR }
       }
     );
-
-    console.log(result)
 
     const resultSet = result.outBinds.result;
     const rows = await resultSet.getRows(); 
