@@ -131,6 +131,33 @@ async function addPatient(body) {
   }
 }
 
+async function updatePatient(body) {
+  try {
+    let conn = await database.getConnection();
+    const sqlStatement = `
+    BEGIN
+      update_patient(:patient_id, :birth_number, :name, :surname, :postal_code, :hospital_id, :address, :email, :date_from);
+    END;
+    `;
+
+    await conn.execute(sqlStatement, {
+      patient_id: body.patient_id,
+      birth_number: body.birth_number,
+      name: body.name,
+      surname: body.surname,
+      postal_code: body.postal_code,
+      hospital_id: body.hospital_id,
+      email: body.email,
+      address: body.address,
+      date_from: body.date_from
+    });
+
+    console.log('Patient updated');
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
 async function deletePatient(patientBirthNumber) {
   try {
     let conn = await database.getConnection();
@@ -155,6 +182,7 @@ module.exports = {
   getPatientById,
   getPatientsByHospital,
   addPatient,
+  updatePatient,
   deletePatient,
   getVaccinationsHistoryByPatientId,
   getPatientFormDataByPatientId,

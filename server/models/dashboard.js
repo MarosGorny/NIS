@@ -1,3 +1,4 @@
+const { log } = require('console');
 const database = require('../database/database');
 
 async function getTop10PeopleWithMostBloodDonations(hospitalId, paramDate) {

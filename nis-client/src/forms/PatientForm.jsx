@@ -59,16 +59,13 @@ export default function PatientForm(props) {
     })
       .then((response) => response.json())
       .then(async (data) => {
-        const municipality = municipalities.find(
-          (m) => m.POSTAL_CODE === data.POSTAL_CODE,
-        );
 
         const initialValuesFromDb = {
           birth_number: data.BIRTH_NUMBER,
           email: data.EMAIL,
           name: data.NAME,
           surname: data.SURNAME,
-          postal_code: municipality,
+          postal_code: data.POSTAL_CODE,
           address: data.ADDRESS,
           date_from: new Date(data.DATE_FROM),
         };
@@ -103,33 +100,35 @@ export default function PatientForm(props) {
   const onSubmit = async (data, form) => {
     const token = localStorage.getItem('logged-user');
     const userData = GetUserData(token);
-    const requestOptionsPatient = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: 'Bearer ' + token,
-      },
+    const endpoint = patientId ? '/patient/update' : '/patient/add'; // Determine endpoint
 
-      body: JSON.stringify({
-        patient_id: patientId || null,
-        birth_number: data.birth_number,
-        name: data.name,
-        surname: data.surname,
-        postal_code: data.postal_code.POSTAL_CODE,
-        hospital_id: userData.UserInfo.hospital,
-        address: data.address,
-        date_from: data.date_from.toLocaleString('en-GB').replace(',', ''),
-        date_to: null,
-      }),
+    const requestOptionsPatient = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({
+            patient_id: patientId || null,
+            birth_number: data.birth_number,
+            name: data.name,
+            email: data.email,
+            surname: data.surname,
+            postal_code: data.postal_code,
+            hospital_id: userData.UserInfo.hospital,
+            address: data.address,
+            date_from: data.date_from.toLocaleString('en-GB').replace(',', ''),
+        }),
     };
 
-    await fetch('/patient', requestOptionsPatient).then(() => {
-      showSuccess();
-      navigate('/patient', { state: 'patient_added' });
+    await fetch(endpoint, requestOptionsPatient).then(() => {
+        showSuccess();
+        navigate('/patient', { state: patientId ? 'patient_updated' : 'patient_added' });
     });
 
     form.restart();
   };
+
 
   const isFormFieldValid = (meta) => !!(meta.touched && meta.error);
   const getFormErrorMessage = (meta) => {

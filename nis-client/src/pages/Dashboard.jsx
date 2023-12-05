@@ -9,6 +9,7 @@ import Top10BloodDonationsTable from 'tables/Top10BloodDonationsTable';
 import { Calendar } from 'primereact/calendar';
 import HospitalSpaceTable from 'tables/HospitalSpaceTable';
 import TopNDiagnosesTable from 'tables/TopNDiagnosesTable';
+import GetUserData from 'auth/get_user_data';
 import AgeCategoryPatient from "../charts/AgeCategoryPatient";
 import OldestPatientsTable from "../tables/OldestPatientsTable";
 import AllEmployeesInDepartmentsInHospital from "../tables/AllEmployeesInDepartmentsInHospital";
@@ -18,7 +19,6 @@ import PatientBornInMonths from "../charts/PatientBornInMonths";
 export default function Dashboard(props) {
   const [hospital, setHospital] = useState('');
   const [hospitalId, setHospitalId] = useState(0);
-  const [hospitalSpaceData, setHospitalSpaceData] = useState([]);
   const [appointmentsCount, setAppointmentsCount] = useState(0);
 
   const [autoCompleteValue, setAutocompleteValue] = useState('');
@@ -40,9 +40,8 @@ export default function Dashboard(props) {
     if (!props?.isLoggedIn) {
       navigate('/login');
     }
-    fetchFreeSpaces();
-    fetchAppointmentsCount(1); //TODO: Set for hospitalId
-  }, [props.isLoggedIn]);
+    fetchAppointmentsCount(hospitalId);
+  }, [props.isLoggedIn,hospitalId]);
 
   const fetchHospitals = (hospitalName) => {
     const token = localStorage.getItem('logged-user');
@@ -56,28 +55,24 @@ export default function Dashboard(props) {
       });
   };
 
-  const fetchFreeSpaces = () => {
-    //if (!hospitalId) return;
-    //TODO: Set for hospitalId
-    
-    const token = localStorage.getItem('logged-user');
-    const headers = { authorization: 'Bearer ' + token };
-
-    fetch(`dashboard/hospital/free-spaces/${1}`, { headers })
-      .then(response => response.json())
-      .then(data => {
-
-        setHospitalSpaceData(data);
-      })
-      .catch(error => console.error('Error fetching free spaces:', error));
-  };
-
   const fetchAppointmentsCount = (hospitalId, date) => {
     // Fetch logic here
     const token = localStorage.getItem('logged-user');
     const headers = { authorization: 'Bearer ' + token };
+    const effectiveHospitalId = hospitalId || GetUserData(token).UserInfo.hospital;
 
-    fetch(`/hospital/appointments-count/${1}/${date}`, { headers })
+    if(date === undefined) {
+      date = new Date()
+        .toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+        })
+        .split('/')
+        .join('-');
+    }
+
+    fetch(`/dashboard/hospital/appointments-count/${effectiveHospitalId}/${date}`, { headers })
       .then(response => response.json())
       .then(count => {
         setAppointmentsCount(count);
@@ -138,7 +133,8 @@ export default function Dashboard(props) {
       />
 
       <Card>
-        <HospitalSpaceTable data={hospitalSpaceData} />
+        <HospitalSpaceTable
+          hospitalId={hospitalId} />
       </Card>
 
         <Card>
