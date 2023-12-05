@@ -88,6 +88,14 @@ function App() {
             path="/patient"
             element={<PatientsTable></PatientsTable>}
           ></Route>
+            <Route
+                path="/examination-room"
+                element={<ExaminationRoomTable></ExaminationRoomTable>}
+            ></Route>
+            <Route
+                path="/examination-room/form"
+                element={<ExaminationRoomForm></ExaminationRoomForm>}
+            ></Route>
           <Route
             path="/patient/form"
             element={<PatientForm></PatientForm>}

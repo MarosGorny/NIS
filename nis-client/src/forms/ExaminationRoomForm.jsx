@@ -79,12 +79,10 @@ export default function ExaminationRoomForm() {
     }, []); // eslint-disable-line;
 
     useEffect(() => {
-        console.log("Nurses");
-        console.log(nurses);
+
     }, [nurses]);
     const searchDepartmentLocationCode = (event) => {
-        console.log("search");
-        console.log(departments);
+
         setTimeout(() => {
             let _filteredDepartmentLocationCode;
             if (!event.query.trim().length) {
@@ -95,7 +93,7 @@ export default function ExaminationRoomForm() {
                     const locationCode = String(department.DEPARTMENT_LOCATION_CODE);
 
                     const fullName = `${name} - ${locationCode}`;
-                    console.log(fullName);
+
                     // Check if the concatenated string starts with the query (case-insensitive)
                     return fullName.toLowerCase().startsWith(event.query.toLowerCase());
                 });
@@ -106,8 +104,6 @@ export default function ExaminationRoomForm() {
     };
 
     const searchDoctorID = (event) => {
-        console.log("search");
-        console.log(doctors);
         setTimeout(() => {
             let _filteredDoctorID;
             if (!event.query.trim().length) {
@@ -119,7 +115,7 @@ export default function ExaminationRoomForm() {
                     const speciality = String(doctor.NAME);
 
                     const fullName = `${nameSurname} - ${speciality}- ${doctor_id}`;
-                    console.log(fullName);
+
                     // Check if the concatenated string starts with the query (case-insensitive)
                     return fullName.toLowerCase().startsWith(event.query.toLowerCase());
                 });
@@ -130,8 +126,6 @@ export default function ExaminationRoomForm() {
     };
 
     const searchNurseID = (event) => {
-        console.log("search");
-        console.log(nurses);
         setTimeout(() => {
             let _filteredNurseID;
             if (!event.query.trim().length) {
@@ -143,7 +137,6 @@ export default function ExaminationRoomForm() {
                     const speciality = String(nurse.NAME);
 
                     const fullName = `${nameSurname} - ${speciality}- ${nurse_id}`;
-                    console.log(fullName);
                     // Check if the concatenated string starts with the query (case-insensitive)
                     return fullName.toLowerCase().startsWith(event.query.toLowerCase());
                 });
@@ -185,7 +178,6 @@ export default function ExaminationRoomForm() {
     };
 
     const addExaminationRooom = async (data, form) => {
-        console.log(data);
         const token = localStorage.getItem('logged-user');
         const tokenParsedData = GetUserData(token);
         const headers = { authorization: 'Bearer ' + token,'Content-Type': 'application/json' };
@@ -244,8 +236,7 @@ export default function ExaminationRoomForm() {
             nurseID: data.nurseID,
             supplies:jsonString
         });
-        console.log("body")
-        console.log(body);
+
         fetch(`/examination/new-room-supplies`, {
             method: 'POST',
             headers,
@@ -278,8 +269,6 @@ export default function ExaminationRoomForm() {
 
 
     const onSubmit = async (data, form) => {
-        console.log(data);
-        console.log(items);
         if (items[0].name == ''){
             addExaminationRooom(data,form);
         }
@@ -320,7 +309,6 @@ export default function ExaminationRoomForm() {
     const openDialog = () => setShowDialog(true);
     const closeDialog = () => {
         setShowDialog(false);
-        console.log(items);
     }
 
 
@@ -452,12 +440,10 @@ export default function ExaminationRoomForm() {
                                             )}
                                             onChange={(e) => {
                                                 const selectedValue = e.value ? `${e.value.NAME} - ${e.value.DEPARTMENT_LOCATION_CODE}` : '';
-                                                console.log(selectedValue);
+
                                                 input.onChange(selectedValue);
-                                                console.log(e.value);
+
                                                 setSelectedDepartment(e.value);
-                                                console.log("click");
-                                                console.log(e.value);
                                                 if (typeof e.value === 'object' && e.value !== null) {
                                                     // Split the string by hyphen
                                                     const parts = selectedValue.split('-');
@@ -465,7 +451,6 @@ export default function ExaminationRoomForm() {
                                                     // Get the second part and trim any extra whitespace
                                                     const extractedValue = parts[1] ? parts[1].trim() : null;
 
-                                                    console.log(extractedValue);
                                                     input.onChange(extractedValue);
                                                     setSelectedDepartment(extractedValue);
 
@@ -526,7 +511,7 @@ export default function ExaminationRoomForm() {
                                                     // Check if a match is found
                                                     const extractedNumber = match ? match[0] : null;
                                                     input.onChange(extractedNumber);
-                                                    console.log(extractedNumber); // Output: 500492
+                                                     // Output: 500492
                                                     setSelectedDoctor(extractedNumber);
 
 
