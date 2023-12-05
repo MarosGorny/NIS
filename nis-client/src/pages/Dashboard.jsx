@@ -10,6 +10,12 @@ import { Calendar } from 'primereact/calendar';
 import HospitalSpaceTable from 'tables/HospitalSpaceTable';
 import TopNDiagnosesTable from 'tables/TopNDiagnosesTable';
 import GetUserData from 'auth/get_user_data';
+import AgeCategoryPatient from "../charts/AgeCategoryPatient";
+import OldestPatientsTable from "../tables/OldestPatientsTable";
+import AllEmployeesInDepartmentsInHospital from "../tables/AllEmployeesInDepartmentsInHospital";
+import AgeCategoryEmployee from "../charts/AgeCategoryEmployee";
+import PatientBornInMonths from "../charts/PatientBornInMonths";
+
 export default function Dashboard(props) {
   const [hospital, setHospital] = useState('');
   const [hospitalId, setHospitalId] = useState(0);
@@ -34,7 +40,7 @@ export default function Dashboard(props) {
     if (!props?.isLoggedIn) {
       navigate('/login');
     }
-    fetchAppointmentsCount(hospitalId); 
+    fetchAppointmentsCount(hospitalId);
   }, [props.isLoggedIn,hospitalId]);
 
   const fetchHospitals = (hospitalName) => {
@@ -127,9 +133,18 @@ export default function Dashboard(props) {
       />
 
       <Card>
-        <HospitalSpaceTable 
+        <HospitalSpaceTable
           hospitalId={hospitalId} />
       </Card>
+
+        <Card>
+            <AllEmployeesInDepartmentsInHospital hospitalId={hospitalId} limitRows={20} />
+        </Card>
+        <Card>
+            <AgeCategoryEmployee
+                hospitalId={hospitalId}
+            ></AgeCategoryEmployee>
+        </Card>
 
       <Card>
         <TopNDiagnosesTable hospitalId={hospitalId} limitRows={10} />
@@ -148,6 +163,17 @@ export default function Dashboard(props) {
           date={date}
         ></BloodDonationTypes>
       </Card>
+        <Card>
+            <AgeCategoryPatient
+                hospitalId={hospitalId}
+            ></AgeCategoryPatient>
+        </Card>
+        <Card>
+            <OldestPatientsTable hospitalId={hospitalId} limitRows={10} />
+        </Card>
+        <Card>
+            <PatientBornInMonths hospitalId={hospitalId} limitRows={2020} />
+        </Card>
     </>
   );
 }

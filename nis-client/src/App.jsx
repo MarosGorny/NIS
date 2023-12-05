@@ -60,6 +60,7 @@ function App() {
           icon="pi pi-user"
           onClick={() => navigate('/patient')}
         />
+          <Button icon="pi pi-table" onClick={() => navigate('/examination-room')} />
         <Button icon="pi pi-sign-out" onClick={() => navigate('/logout')} />
       </aside>
       <div
