@@ -16,6 +16,7 @@ export default function AgeCategoryPatient(props) {
         fetchAgeCategoryPatient();
     }, [props?.hospitalId]);
 
+
     useEffect(() => {
         if (!ageCategoryPatient) return;
 
