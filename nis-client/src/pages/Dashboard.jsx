@@ -9,6 +9,11 @@ import Top10BloodDonationsTable from 'tables/Top10BloodDonationsTable';
 import { Calendar } from 'primereact/calendar';
 import HospitalSpaceTable from 'tables/HospitalSpaceTable';
 import TopNDiagnosesTable from 'tables/TopNDiagnosesTable';
+import AgeCategoryPatient from "../charts/AgeCategoryPatient";
+import OldestPatientsTable from "../tables/OldestPatientsTable";
+import AllEmployeesInDepartmentsInHospital from "../tables/AllEmployeesInDepartmentsInHospital";
+import AgeCategoryEmployee from "../charts/AgeCategoryEmployee";
+import PatientBornInMonths from "../charts/PatientBornInMonths";
 
 export default function Dashboard(props) {
   const [hospital, setHospital] = useState('');
@@ -136,6 +141,15 @@ export default function Dashboard(props) {
         <HospitalSpaceTable data={hospitalSpaceData} />
       </Card>
 
+        <Card>
+            <AllEmployeesInDepartmentsInHospital hospitalId={hospitalId} limitRows={20} />
+        </Card>
+        <Card>
+            <AgeCategoryEmployee
+                hospitalId={hospitalId}
+            ></AgeCategoryEmployee>
+        </Card>
+
       <Card>
         <TopNDiagnosesTable hospitalId={hospitalId} limitRows={10} />
       </Card>
@@ -153,6 +167,17 @@ export default function Dashboard(props) {
           date={date}
         ></BloodDonationTypes>
       </Card>
+        <Card>
+            <AgeCategoryPatient
+                hospitalId={hospitalId}
+            ></AgeCategoryPatient>
+        </Card>
+        <Card>
+            <OldestPatientsTable hospitalId={hospitalId} limitRows={10} />
+        </Card>
+        <Card>
+            <PatientBornInMonths hospitalId={hospitalId} limitRows={2020} />
+        </Card>
     </>
   );
 }

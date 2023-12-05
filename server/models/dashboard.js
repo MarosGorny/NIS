@@ -138,7 +138,6 @@ async function getFreeSpacesInHospital(hospitalId) {
       }
     );
 
-    console.log(result)
 
     const resultSet = result.outBinds.result;
     const rows = await resultSet.getRows(); 
@@ -175,6 +174,183 @@ async function getAppointmentsCountByDate(hospitalId, paramDate = null) {
     throw new Error('Database error: ' + err);
   }
 }
+async function getAgeCategoryOfPatientsForHospital(hospitalId) {
+  try {
+    let conn = await database.getConnection();
+
+    const result = await conn.execute(
+        `SELECT
+  COUNT(CASE WHEN age BETWEEN 0 AND 1 THEN 1 ELSE NULL END) AS "Dojča(0-1r)",
+  COUNT(CASE WHEN age BETWEEN 2 AND 4 THEN 1 ELSE NULL END) AS "Batoľa(2-4r)",
+  COUNT(CASE WHEN age BETWEEN 5 AND 12 THEN 1 ELSE NULL END) AS "Dieťa(5-12r)",
+  COUNT(CASE WHEN age BETWEEN 13 AND 19 THEN 1 ELSE NULL END) AS "Dospievajúci(13-19r)",
+  COUNT(CASE WHEN age BETWEEN 20 AND 39 THEN 1 ELSE NULL END) AS "Dospelý(20-39r)",
+  COUNT(CASE WHEN age BETWEEN 40 AND 59 THEN 1 ELSE NULL END) AS "Dospelý v strednom veku(40-59r)",
+  COUNT(CASE WHEN age >= 60 THEN 1 ELSE NULL END) AS "Starší dospelí(60+)r"
+FROM (
+  SELECT
+    FLOOR(MONTHS_BETWEEN(SYSDATE, F_BIRTH_DATE(birth_number)) / 12) AS age
+  FROM
+    patient
+  WHERE patient.hospital_id = :hospitalId
+)`,
+        {
+          hospitalId: hospitalId,
+        }
+    );
+
+    return result.rows[0];
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
+async function getAgeCategoryOfEmployeesForHospital(hospitalId) {
+  try {
+    let conn = await database.getConnection();
+
+    const result = await conn.execute(
+        `SELECT
+  COUNT(CASE WHEN age BETWEEN 20 AND 39 THEN 1 ELSE NULL END) AS "Dospelý(20-39r)",
+  COUNT(CASE WHEN age BETWEEN 40 AND 59 THEN 1 ELSE NULL END) AS "Dospelý v strednom veku(40-59r)",
+  COUNT(CASE WHEN age >= 60 THEN 1 ELSE NULL END) AS "Starší dospelí(60+)r"
+FROM (
+  SELECT
+    FLOOR(MONTHS_BETWEEN(SYSDATE, F_BIRTH_DATE(person_birth_number)) / 12) AS age
+  FROM
+    staff
+  WHERE staff.hospital_id = :hospitalId
+)`,
+        {
+          hospitalId: hospitalId,
+        }
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
+async function getOldestPatientsForHospital(hospitalId, limitRows = 3) {
+  try {
+    let conn = await database.getConnection();
+
+    const result = await conn.execute(
+        `SELECT
+    name,
+    surname,
+    birth_number,
+    TO_CHAR(birth_date, 'DD.MM.YYYY') AS birth_date,
+    age
+FROM (
+    SELECT
+        p.person_info.name AS name,
+        p.person_info.surname AS surname,
+        birth_number,
+        F_BIRTH_DATE(birth_number) AS birth_date,
+        FLOOR(MONTHS_BETWEEN(SYSDATE, F_BIRTH_DATE(birth_number)) / 12) AS age 
+    FROM
+        patient
+    JOIN
+        person p USING (birth_number)
+    WHERE
+        patient.hospital_id = :hospitalId
+    ORDER BY birth_date ASC
+)
+WHERE ROWNUM <= :limitRows`,
+        {
+          hospitalId: hospitalId,
+          limitRows: limitRows,
+        }
+    );
+
+    return result.rows;
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
+
+
+async function getEmployeesInExaminationRoomInDepartmentsForHospital(hospitalId, limitRows = 20) {
+  try {
+    let conn = await database.getConnection();
+
+    const result = await conn.execute(
+        `SELECT
+    DEPARTMENT_LOCATION_CODE,
+    DEPARTMENT_NAME,
+    numbers_doctors,
+    numbers_nurses
+FROM (
+    SELECT
+        d.DEPARTMENT_LOCATION_CODE,
+        d.NAME AS DEPARTMENT_NAME,
+        COUNT(DISTINCT er.DOCTOR_ID) AS numbers_doctors,
+        COUNT(DISTINCT er.NURSE_ID) AS numbers_nurses,
+        ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT er.DOCTOR_ID) DESC) AS row_number
+    FROM
+        DEPARTMENT d
+    LEFT JOIN
+        EXAMINATION_ROOM er ON d.DEPARTMENT_LOCATION_CODE = er.DEPARTMENT_LOCATION_CODE
+    WHERE
+        d.HOSPITAL_ID = :hospitalId
+    GROUP BY
+        d.DEPARTMENT_LOCATION_CODE, d.NAME
+)
+WHERE
+    row_number <= :limitRows`,
+        {
+          hospitalId: hospitalId,
+          limitRows: limitRows,
+        }
+    );
+
+    return result.rows;
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
+async function getPatientsBornInMonthForYear(hospitalId, year = 2022) {
+  try {
+    let conn = await database.getConnection();
+
+    const result = await conn.execute(
+        `SELECT
+    COUNT(CASE WHEN TO_CHAR(birth_date, 'MM') = '01' THEN 1 END) AS january,
+    COUNT(CASE WHEN TO_CHAR(birth_date, 'MM') = '02' THEN 1 END) AS february,
+    COUNT(CASE WHEN TO_CHAR(birth_date, 'MM') = '03' THEN 1 END) AS march,
+    COUNT(CASE WHEN TO_CHAR(birth_date, 'MM') = '04' THEN 1 END) AS april,
+    COUNT(CASE WHEN TO_CHAR(birth_date, 'MM') = '05' THEN 1 END) AS may,
+    COUNT(CASE WHEN TO_CHAR(birth_date, 'MM') = '06' THEN 1 END) AS june,
+    COUNT(CASE WHEN TO_CHAR(birth_date, 'MM') = '07' THEN 1 END) AS july,
+    COUNT(CASE WHEN TO_CHAR(birth_date, 'MM') = '08' THEN 1 END) AS august,
+    COUNT(CASE WHEN TO_CHAR(birth_date, 'MM') = '09' THEN 1 END) AS september,
+    COUNT(CASE WHEN TO_CHAR(birth_date, 'MM') = '10' THEN 1 END) AS october,
+    COUNT(CASE WHEN TO_CHAR(birth_date, 'MM') = '11' THEN 1 END) AS november,
+    COUNT(CASE WHEN TO_CHAR(birth_date, 'MM') = '12' THEN 1 END) AS december
+FROM (
+    SELECT
+        F_BIRTH_DATE(birth_number) AS birth_date
+    FROM
+        patient
+    WHERE
+        patient.hospital_id = :hospitalId
+        AND TO_CHAR( F_BIRTH_DATE(birth_number), 'YYYY') = :year
+)`,
+        {
+          hospitalId: hospitalId,
+          year: year,
+        }
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
+
 
 
 
@@ -184,4 +360,9 @@ module.exports = {
   getFreeSpacesInHospital,
   getAppointmentsCountByDate,
   getTopNDiagnosesByAverageStay,
+  getAgeCategoryOfPatientsForHospital,
+  getOldestPatientsForHospital,
+  getEmployeesInExaminationRoomInDepartmentsForHospital,
+  getAgeCategoryOfEmployeesForHospital,
+  getPatientsBornInMonthForYear
 };
