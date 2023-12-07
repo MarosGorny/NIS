@@ -91,6 +91,9 @@ export default function PatientForm(props) {
     if (!data.address) {
       errors.address = 'Ulica je povinná';
     }
+    if (!data.email) {
+      errors.email = 'Email je povinný';
+    }
     if (!data.date_from) {
       errors.date_from = 'Dátum zápisu je povinný';
     }

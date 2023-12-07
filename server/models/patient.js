@@ -105,8 +105,9 @@ async function getPatientsByHospital(hospitalId) {
 }
 
 async function addPatient(body) {
+  const conn = await database.getConnection();
+
   try {
-    let conn = await database.getConnection();
     const sqlStatement = `
     BEGIN
       add_patient(:birth_number, :name, :surname, :postal_code, :hospital_id, :address, :email, :date_from, :date_to);
@@ -121,12 +122,13 @@ async function addPatient(body) {
       hospital_id: body.hospital_id,
       email: body.email,
       address: body.address,
-      date_from: body.date_from,
-      date_to: body.date_to,
+      date_from: new Date(body.date_from),
+      date_to: body.date_to ? new Date(body.date_to) : null,
     });
 
     console.log('Patient inserted ' + result);
   } catch (err) {
+    conn.rollback();
     throw new Error('Database error: ' + err);
   }
 }
