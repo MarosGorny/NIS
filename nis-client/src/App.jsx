@@ -17,6 +17,7 @@ import MedicalRecordForm from 'forms/MedicalRecordForm';
 import VaccineForm from 'forms/VaccineForm';
 import { Button } from 'primereact/button';
 import { Register } from 'auth/register/Register';
+import AppointmentForm from 'forms/AppointmentForm';
 
 
 function App() {
@@ -112,6 +113,7 @@ function App() {
             path="/medicalRecord/form"
             element={<MedicalRecordForm></MedicalRecordForm>}
           ></Route>
+          <Route path="/appointment-form" element={<AppointmentForm />} />
           <Route
             path="/vaccine/form"
             element={<VaccineForm></VaccineForm>}
