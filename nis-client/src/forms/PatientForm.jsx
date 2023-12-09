@@ -59,7 +59,6 @@ export default function PatientForm(props) {
     })
       .then((response) => response.json())
       .then(async (data) => {
-
         const initialValuesFromDb = {
           birth_number: data.BIRTH_NUMBER,
           email: data.EMAIL,
@@ -103,35 +102,38 @@ export default function PatientForm(props) {
   const onSubmit = async (data, form) => {
     const token = localStorage.getItem('logged-user');
     const userData = GetUserData(token);
-    const endpoint = patientId ? '/patient/update' : '/patient/add'; // Determine endpoint
+    const doctorId = userData.UserInfo.userid;
+    const endpoint = patientId ? '/patient/update' : '/patient/add';
 
     const requestOptionsPatient = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            authorization: 'Bearer ' + token,
-        },
-        body: JSON.stringify({
-            patient_id: patientId || null,
-            birth_number: data.birth_number,
-            name: data.name,
-            email: data.email,
-            surname: data.surname,
-            postal_code: data.postal_code,
-            hospital_id: userData.UserInfo.hospital,
-            address: data.address,
-            date_from: data.date_from.toLocaleString('en-GB').replace(',', ''),
-        }),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: 'Bearer ' + token,
+      },
+      body: JSON.stringify({
+        patient_id: patientId || null,
+        birth_number: data.birth_number,
+        name: data.name,
+        email: data.email,
+        surname: data.surname,
+        postal_code: data.postal_code,
+        hospital_id: userData.UserInfo.hospital,
+        address: data.address,
+        date_from: data.date_from.toLocaleString('en-GB').replace(',', ''),
+        doctor_id: doctorId,
+      }),
     };
 
     await fetch(endpoint, requestOptionsPatient).then(() => {
-        showSuccess();
-        navigate('/patient', { state: patientId ? 'patient_updated' : 'patient_added' });
+      showSuccess();
+      navigate('/patient', {
+        state: patientId ? 'patient_updated' : 'patient_added',
+      });
     });
 
     form.restart();
   };
-
 
   const isFormFieldValid = (meta) => !!(meta.touched && meta.error);
   const getFormErrorMessage = (meta) => {
@@ -238,6 +240,7 @@ export default function PatientForm(props) {
                         className={classNames({
                           'p-invalid': isFormFieldValid(meta),
                         })}
+                        disabled={patientId ? true : false}
                       />
                       <label
                         htmlFor="birth_number"

@@ -4,6 +4,8 @@ async function insertVaccine(body) {
   try {
     let conn = await database.getConnection();
 
+    console.log(body);
+
     const result = await conn.execute(
       `
          BEGIN

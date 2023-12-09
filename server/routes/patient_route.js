@@ -22,7 +22,7 @@ router.get(
   controller.getVaccinationsHistoryByPatientId
 );
 router.post(
-  '/',
+  '/add',
   //verify.verifyRoles(1, 3),
   //verify.checkForCorrectId(),
   controller.addPatient
