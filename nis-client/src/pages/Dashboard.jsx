@@ -15,6 +15,7 @@ import OldestPatientsTable from "../tables/OldestPatientsTable";
 import AllEmployeesInDepartmentsInHospital from "../tables/AllEmployeesInDepartmentsInHospital";
 import AgeCategoryEmployee from "../charts/AgeCategoryEmployee";
 import PatientBornInMonths from "../charts/PatientBornInMonths";
+import GenderPatient from "../charts/GenderPatient";
 
 export default function Dashboard(props) {
   const [hospital, setHospital] = useState('');
@@ -167,6 +168,11 @@ export default function Dashboard(props) {
             <AgeCategoryPatient
                 hospitalId={hospitalId}
             ></AgeCategoryPatient>
+        </Card>
+        <Card>
+            <GenderPatient
+                hospitalId={hospitalId}
+            ></GenderPatient>
         </Card>
         <Card>
             <OldestPatientsTable hospitalId={hospitalId} limitRows={10} />

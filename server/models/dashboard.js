@@ -351,6 +351,25 @@ FROM (
   }
 }
 
+async function getPatientsByGenderForHospital(hospitalId) {
+  try {
+    let conn = await database.getConnection();
+
+    const result = await conn.execute(
+        `SELECT 
+     SUM(CASE WHEN SUBSTR(birth_number, 3, 1) IN (0, 1, 2, 3) THEN 1 ELSE 0 END) Muži,
+     SUM(CASE WHEN SUBSTR(birth_number, 3, 1) IN (5, 6, 7, 8) THEN 1 ELSE 0 END) Ženy
+        FROM patient where hospital_id=:hospitalId`,
+        {
+          hospitalId: hospitalId,
+        }
+    );
+    return result.rows[0];
+  } catch (err) {
+    throw new Error('Database error: ' + err);
+  }
+}
+
 
 
 
@@ -365,5 +384,6 @@ module.exports = {
   getOldestPatientsForHospital,
   getEmployeesInExaminationRoomInDepartmentsForHospital,
   getAgeCategoryOfEmployeesForHospital,
-  getPatientsBornInMonthForYear
+  getPatientsBornInMonthForYear,
+  getPatientsByGenderForHospital
 };
