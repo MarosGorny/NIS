@@ -134,4 +134,18 @@ module.exports = {
     });
   },
 
+  getPatientsByGenderForHospital: (req, res) => {
+    const dashboard = require('../models/dashboard');
+    (async () => {
+      const hospitalId = req.params.hospitalId;
+      return_val = await dashboard.getPatientsByGenderForHospital(
+          hospitalId
+      );
+      res.status(200).json(return_val);
+    })().catch((err) => {
+      console.error(err);
+      res.status(403).send(err);
+    });
+  },
+
 };

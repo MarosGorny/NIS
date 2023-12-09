@@ -69,4 +69,12 @@ router.get(
     controller.getPatientsBornInMonthForYear
 );
 
+router.get(
+    '/patient-genders/:hospitalId',
+    //verify.verifyRoles(1, 3),
+    //verify.checkForCorrectId(),
+    controller.getPatientsByGenderForHospital
+);
+
+
 module.exports = router;
