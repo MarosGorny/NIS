@@ -43,25 +43,23 @@ function App() {
         }}
       >
         <Button
-          className={`sidebar-button ${
-            location.pathname === '/' ? 'sidebar-button-selected' : ''
-          }`}
+          className={`sidebar-button ${location.pathname === '/' ? 'sidebar-button-selected' : ''
+            }`}
           icon="pi pi-home"
           onClick={() => navigate('/')}
         />
         <Button
-          className={`sidebar-button ${
-            location.pathname.startsWith('/patient') ||
-            location.pathname.startsWith('/vaccine') ||
-            location.pathname.startsWith('/prescription') ||
-            location.pathname.startsWith('/medicalRecord')
+          className={`sidebar-button ${location.pathname.startsWith('/patient') ||
+              location.pathname.startsWith('/vaccine') ||
+              location.pathname.startsWith('/prescription') ||
+              location.pathname.startsWith('/medicalRecord')
               ? 'sidebar-button-selected'
               : ''
-          }`}
+            }`}
           icon="pi pi-user"
           onClick={() => navigate('/patient')}
         />
-          <Button icon="pi pi-table" onClick={() => navigate('/examination-room')} />
+        <Button icon="pi pi-table" onClick={() => navigate('/examination-room')} />
         <Button icon="pi pi-sign-out" onClick={() => navigate('/logout')} />
       </aside>
       <div
@@ -89,14 +87,14 @@ function App() {
             path="/patient"
             element={<PatientsTable></PatientsTable>}
           ></Route>
-            <Route
-                path="/examination-room"
-                element={<ExaminationRoomTable></ExaminationRoomTable>}
-            ></Route>
-            <Route
-                path="/examination-room/form"
-                element={<ExaminationRoomForm></ExaminationRoomForm>}
-            ></Route>
+          <Route
+            path="/examination-room"
+            element={<ExaminationRoomTable></ExaminationRoomTable>}
+          ></Route>
+          <Route
+            path="/examination-room/form"
+            element={<ExaminationRoomForm></ExaminationRoomForm>}
+          ></Route>
           <Route
             path="/patient/form"
             element={<PatientForm></PatientForm>}
@@ -113,7 +111,10 @@ function App() {
             path="/medicalRecord/form"
             element={<MedicalRecordForm></MedicalRecordForm>}
           ></Route>
-          <Route path="/appointment-form" element={<AppointmentForm />} />
+          <Route
+            path="/appointment-form"
+            element={<AppointmentForm />}
+          ></Route>/
           <Route
             path="/vaccine/form"
             element={<VaccineForm></VaccineForm>}
