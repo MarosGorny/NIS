@@ -94,6 +94,29 @@ module.exports = {
         });
     },
 
+    updateExaminationRoom: (req, res) => {
+        const examinationRoom = require('../models/examination_room');
+        (async () => {
+            return_val = await examinationRoom.updateExaminationRoom(req.body);
+            res.status(200).json(return_val);
+        })().catch((err) => {
+            console.error(err);
+            res.status(403).send(err);
+        });
+    },
+
+
+    getExaminationRoomByLocationCode: (req, res) => {
+        const examinationRoom = require('../models/examination_room');
+        (async () => {
+            return_val = await examinationRoom.getExaminationRoomByLocationCode(req.params.id);
+            res.status(200).json(return_val);
+        })().catch((err) => {
+            console.error(err);
+            res.status(403).send(err);
+        });
+    },
+
 
 
 

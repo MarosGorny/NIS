@@ -6,7 +6,7 @@ import { classNames } from 'primereact/utils';
 import React, { useEffect, useRef, useState } from 'react';
 import { Field, Form } from 'react-final-form';
 import GetUserData from '../auth/get_user_data';
-import { useNavigate } from 'react-router';
+import {useLocation, useNavigate} from 'react-router';
 import { Dialog } from 'primereact/dialog'
 import { Link } from 'react-router-dom';
 
@@ -26,6 +26,19 @@ export default function ExaminationRoomForm() {
     const [selectedDepartment, setSelectedDepartment] = useState(null);
     const [selectedDoctor, setSelectedDoctor] = useState(null);
     const [selectedNurse, setSelectedNurse] = useState(null);
+
+    const [examinationRoomNumber, setExaminationRoomNumber] = useState(null);
+    const { state } = useLocation();
+    const [formInitialValues, setFormInitialValues] = useState({
+
+        examinationRoomNumber: '',
+        nameExaminationRoom: '',
+        department: '',
+        doctorID: '',
+        nurseID: '',
+
+    });
+    const [isFetchingData, setIsFetchingData] = useState(false);
 
 
 
@@ -95,7 +108,7 @@ export default function ExaminationRoomForm() {
                     const fullName = `${name} - ${locationCode}`;
 
                     // Check if the concatenated string starts with the query (case-insensitive)
-                    return fullName.toLowerCase().startsWith(event.query.toLowerCase());
+                    return fullName.toLowerCase().includes(event.query.toLowerCase());
                 });
             }
 
@@ -117,7 +130,7 @@ export default function ExaminationRoomForm() {
                     const fullName = `${nameSurname} - ${speciality}- ${doctor_id}`;
 
                     // Check if the concatenated string starts with the query (case-insensitive)
-                    return fullName.toLowerCase().startsWith(event.query.toLowerCase());
+                    return fullName.toLowerCase().includes(event.query.toLowerCase());
                 });
             }
 
@@ -138,12 +151,51 @@ export default function ExaminationRoomForm() {
 
                     const fullName = `${nameSurname} - ${speciality}- ${nurse_id}`;
                     // Check if the concatenated string starts with the query (case-insensitive)
-                    return fullName.toLowerCase().startsWith(event.query.toLowerCase());
+                    return fullName.toLowerCase().includes(event.query.toLowerCase());
                 });
             }
 
             setFilteredNurseID( _filteredNurseID);
         }, 100);
+    };
+
+    useEffect(() => {
+        if (!state) return;
+        setExaminationRoomNumber(state.examinationRoomNumber);
+    }, []);
+
+    useEffect(() => {
+        if (!examinationRoomNumber) return;
+        fetchFormInitialValues();
+    }, [examinationRoomNumber]);
+
+    // Add the following useEffect block to observe changes in formInitialValues
+    useEffect(() => {
+        setSelectedDepartment(formInitialValues.department);
+        setSelectedNurse(String(formInitialValues.nurseID));
+        setSelectedDoctor(String(formInitialValues.doctorID));
+    }, [formInitialValues]);
+    const fetchFormInitialValues = () => {
+        if (!examinationRoomNumber) return;
+
+        const token = localStorage.getItem('logged-user');
+        const headers = { authorization: 'Bearer ' + token };
+        fetch(`/examination/formData/${examinationRoomNumber}`, {
+            headers,
+        })
+            .then((response) => response.json())
+            .then(async (data) => {
+
+                const initialValuesFromDb = {
+                        examinationRoomNumber: data.EXAMINATION_LOCATION_CODE,
+                        nameExaminationRoom: data.NAME_ROOM,
+                        department: data.DEPARTMENT_LOCATION_CODE,
+                        doctorID: data.DOCTOR_ID,
+                        nurseID: data.NURSE_ID,
+                };
+                setFormInitialValues(initialValuesFromDb)
+                setIsFetchingData(true);
+            });
     };
 
     const validate = (data) => {
@@ -188,6 +240,7 @@ export default function ExaminationRoomForm() {
             doctorID: data.doctorID,
             nurseID: data.nurseID,
         });
+
         fetch(`/examination/new-room`, {
             method: 'POST',
             headers, body
@@ -266,19 +319,86 @@ export default function ExaminationRoomForm() {
         });
     };
 
+    const updateExaminationRooom = async (data, form) => {
+        const token = localStorage.getItem('logged-user');
+        const tokenParsedData = GetUserData(token);
+        const headers = { authorization: 'Bearer ' + token,'Content-Type': 'application/json' };
+        const body =JSON.stringify({
+            examinationRoomNumber: data.examinationRoomNumber,
+            nameExaminationRoom: data.nameExaminationRoom,
+            department: data.department,
+            doctorID: data.doctorID,
+            nurseID: data.nurseID,
+        });
+        fetch(`/examination/update`, {
+            method: 'POST',
+            headers, body
+        }).then((response) => {
+            // Success handling code
 
+            if (!response.ok) {
+                showEditError();
+                form.restart();
+                setTimeout(() => {
+                    navigate('/examination-room', { state: 'examination_room_added' });
+                }, 3000);
+            } else {
+                showEditSuccess();
+                form.restart();
+                setTimeout(() => {
+                    navigate('/examination-room', { state: 'examination_room_added' });
+                }, 3000);
+            }
 
-    const onSubmit = async (data, form) => {
-        if (items[0].name == ''){
-            addExaminationRooom(data,form);
-        }
-        else {
-            addExaminationRooomWithSupplies(data,form);
-        }
+        }).catch((error) => {
+            console.error('Fetch error:', error);
+            showError();
+            form.restart();
+            // Other error handling logic
+        });
+
 
     };
 
 
+
+
+    const onSubmit = async (data, form) => {
+        if (examinationRoomNumber !== null) {
+            // The examinationRoomNumber is not an empty string
+            updateExaminationRooom(data,form);
+        }
+        else {
+            if (items[0].name == ''){
+                addExaminationRooom(data,form);
+            }
+            else {
+                addExaminationRooomWithSupplies(data,form);
+            }
+
+
+        }
+
+
+
+    };
+
+    const showEditSuccess = () => {
+        toast.current.show({
+            severity: 'success',
+            summary: 'Úspešne upravená',
+            detail: 'Ambulancia  bola úspešne upravená',
+            life: 3000,
+        });
+    };
+
+    const showEditError = () => {
+        toast.current.show({
+            severity: 'error',
+            summary: 'Ambulancia sa nepodarilo upraviť',
+            life: 3000,
+        });
+    };
 
 
 
@@ -346,13 +466,7 @@ export default function ExaminationRoomForm() {
             <div className="flex flex-column gap-2">
                 <Form
                     onSubmit={onSubmit}
-                    initialValues={{
-                        examinationRoomNumber: '',
-                        nameExaminationRoom: '',
-                        department: '',
-                        doctorID: '',
-                        nurseID: '',
-                    }}
+                    initialValues={formInitialValues}
                     validate={validate}
                     render={({ handleSubmit }) => (
                         <form onSubmit={handleSubmit} className="p-fluid">
@@ -420,11 +534,11 @@ export default function ExaminationRoomForm() {
                                             Oddelenie*
                                         </label>
                                         <AutoComplete
-
                                             id="department"
+                                            defaultValue={selectedDepartment}
                                             suggestions={filteredDepartmentLocationCode}
                                             completeMethod={searchDepartmentLocationCode}
-                                            field="NAME"
+                                            field="department"
                                             className={classNames({
                                                 'p-invalid': isFormFieldValid(meta),
                                             })}
@@ -511,7 +625,7 @@ export default function ExaminationRoomForm() {
                                                     // Check if a match is found
                                                     const extractedNumber = match ? match[0] : null;
                                                     input.onChange(extractedNumber);
-                                                     // Output: 500492
+                                                    // Output: 500492
                                                     setSelectedDoctor(extractedNumber);
 
 
@@ -529,6 +643,7 @@ export default function ExaminationRoomForm() {
                                     </div>
                                 )}
                             />
+
 
 
                             <Field
@@ -598,9 +713,9 @@ export default function ExaminationRoomForm() {
                                 className="field col-12 "
                                 style={{ justifyContent: 'center', display: 'grid' }}
                             >
-
-                                {/* Tlačidlo na otvorenie dialógového okna */}
-                                <Button type="button" label="Pridať zdravotné potreby" icon="pi pi-plus" onClick={openDialog} />
+                                {!isFetchingData && (
+                                    <Button type="button" label="Pridať zdravotné potreby" icon="pi pi-plus" onClick={openDialog}/>
+                                )}
                             </div>
 
                                 {/* Dialógové okno */}
