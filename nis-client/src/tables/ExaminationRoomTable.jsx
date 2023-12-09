@@ -33,9 +33,7 @@ export default function ExaminationRoomTable() {
         name: '',
         quantity: ''
     });
-    const [visible, setVisible] = useState(false);
     const toastDelete = useRef(null);
-    const [reloadDialog, setReloadDialog] = useState(false);
     const dataTableRef = useRef(null);
     const [dialogVisible, setDialogVisible] = useState(false);
 
@@ -45,11 +43,11 @@ export default function ExaminationRoomTable() {
 
     useEffect(() => {
         loadExaminationRoomsLazy();
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-    useEffect(() => {
         initFilters();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+
+
 
     useEffect(() => {
         if(Object.keys(actualSupplies).length>0){
@@ -134,7 +132,6 @@ export default function ExaminationRoomTable() {
     const loadStaffLazy = (value) => {
         setLazyLoading(true);
         const token = localStorage.getItem('logged-user');
-        const tokenParsedData = GetUserData(token);
         const headers = { authorization: 'Bearer ' + token,'Content-Type': 'application/json' };
         const body =JSON.stringify( {staffId: value.DOCTOR_ID, staffId1:value.NURSE_ID});
         fetch(`/examination/staff`, {
@@ -144,7 +141,6 @@ export default function ExaminationRoomTable() {
             .then((response) => response.json())
             .then((data) => {
                 setSelectedRow(data);
-                console.log(data);
                 setLazyLoading(false);
             });
     };
@@ -154,7 +150,6 @@ export default function ExaminationRoomTable() {
      */
     const getNameOfStaff = () => {
         if (selectedRow !== null) {
-            //console.log(selectedRow.return_val["MENOPRIEZVISKO"]);
             let o_nurse = selectedRow.nurse
             let o_doctor = selectedRow.doctor
 
@@ -206,7 +201,6 @@ export default function ExaminationRoomTable() {
 
     const deleteExaminationRoom = async (rowData) => {
         const token = localStorage.getItem('logged-user');
-        const tokenParsedData = GetUserData(token);
         const headers = {
             authorization: 'Bearer ' + token,
             'Content-Type': 'application/json'
@@ -228,13 +222,35 @@ export default function ExaminationRoomTable() {
                 // Handle fetch errors here
             });
     };
+    const showError = () => {
+        toast.current.show({
+            severity: 'error',
+            summary: 'Ambulancia sa nepodarilo odstraniť',
+            life: 3000,
+        });
+    };
+
+
+
+
+    const showSuccess = () => {
+        toast.current.show({
+            severity: 'success',
+            summary: 'Úspešne odstranená',
+            detail: 'Ambulancia  bola úspešne odstranená',
+            life: 3000,
+        });
+    };
+
 
    /*
         Ak sa nepodari odstranit ambulanciu
     */
     const reject = () => {
-        setDialogVisible(false);
-        toast.current.show({ severity: 'warn', summary: 'Nie je odstranená', detail: 'Ambulanciu sa nepodarilo odstrániť', life: 5000 });
+            setDialogVisible(false);
+            showError();
+            loadExaminationRoomsLazy();
+
     }
 
     /*
@@ -242,8 +258,9 @@ export default function ExaminationRoomTable() {
    */
     const handleAccept = () => {
         setDialogVisible(false);
+        showSuccess();
         deleteExaminationRoom(rowDataDelete);
-        toast.current.show({ severity: 'info', summary: 'Odstranená', detail: 'Ambulanciu sa podarilo odstrániť', life: 5000 });
+
 
     };
 
@@ -262,13 +279,34 @@ export default function ExaminationRoomTable() {
     const deleteExaminationRoomtAction = (rowData) => (
 
         <>
-            <Toast ref={toast} />
+            <Toast ref={toastDelete} />
             <ConfirmDialog visible={dialogVisible} onHide={() => setDialogVisible(false)} message="Naozaj si prajete odstrániť ambulanciu?"
-                           header="Potvrdenie" icon="pi pi-exclamation-triangle" acceptClassName="p-button-danger" accept={() => handleAccept()} reject={reject} acceptLabel="Áno" rejectLabel="Nie"  />
+                           header="Potvrdenie" icon="pi pi-exclamation-triangle" acceptClassName="p-button-danger" accept={() => handleAccept()}  reject={() => reject(toastDelete)} acceptLabel="Áno" rejectLabel="Nie"  />
             <div className="card flex flex-wrap gap-2 justify-content-center">
-                <Button  icon="pi pi-times"  className="p-button-danger"  onClick={() => confirmDelete(rowData)} />
+                <Button tooltip="Odstrániť Ambulanciu"  icon="pi pi-times"  className="p-button-danger"  onClick={() => confirmDelete(rowData)} />
             </div>
         </>
+
+
+
+
+    );
+
+    const handleEditClick = (value) => {
+        navigate('/examination-room/form', {
+            state: {
+                examinationRoomNumber: value.EXAMINATION_LOCATION_CODE,
+            },
+        });
+    };
+
+    const editExaminationRoomtAction = (rowData) => (
+
+
+            <div className="card flex flex-wrap gap-2 justify-content-center">
+                <Button  icon="pi pi-pencil"  tooltip="Upraviť Ambulanciu"  onClick={() => handleEditClick(rowData)} />
+            </div>
+
 
 
 
@@ -310,6 +348,9 @@ export default function ExaminationRoomTable() {
                 const parsedData = JSON.parse(rowData.SUPPLIES);
                setActualSupplies(parsedData);
             }
+            else {
+                setActualSupplies([]);
+            }
             setShowSuppliesDialog(true);
         } catch (error) {
             console.error('Error parsing JSON:', error);
@@ -321,7 +362,7 @@ export default function ExaminationRoomTable() {
         Tlacidlo na zobrazenie zdravotnych potrieb
      */
     const showSupplies = (rowData) => (
-        <Button label="Info" severity="info"  onClick={() => loadActualSupplies(rowData)} />
+        <Button tooltip="Zobraziť zdravotné pomôcky" label="Info" severity="info"  onClick={() => loadActualSupplies(rowData)} />
     );
 
 
@@ -375,7 +416,6 @@ export default function ExaminationRoomTable() {
     const deleteSupply = async (rowData) => {
         rowData.quantity = null;
         const token = localStorage.getItem('logged-user');
-        const tokenParsedData = GetUserData(token);
         const headers = { authorization: 'Bearer ' + token,'Content-Type': 'application/json' };
         const body =JSON.stringify( {supply: rowData, room:examinationRoomCode});
         fetch(`/examination/supply/delete`, {
@@ -402,7 +442,7 @@ export default function ExaminationRoomTable() {
                 });
 
                 setLazyLoading(false);
-                setReloadDialog((prev) => !prev);
+
 
                 // Manually force the DataTable to update
                 dataTableRef.current && dataTableRef.current.filter();
@@ -420,17 +460,18 @@ export default function ExaminationRoomTable() {
         />
     );
 
+
+
+
     /*
         Sluzi na aktualizovanie zdravotnych potrieb v ambulancii
      */
     const updateSuppliesLazy = (value, examinationRoomCode) => {
         setLazyLoading(true);
-        console.log("Update Supplies in jsx");
         const token = localStorage.getItem('logged-user');
-        const tokenParsedData = GetUserData(token);
         const headers = { authorization: 'Bearer ' + token,'Content-Type': 'application/json' };
         const body =JSON.stringify( {supply: value, room:examinationRoomCode});
-        console.log(body);
+
         fetch(`/examination/supply`, {
             method: 'PUT',
             headers, body
@@ -445,7 +486,6 @@ export default function ExaminationRoomTable() {
                             let key = value.name;
                             locSupplies[key] = Number(value.quantity);
                             room.SUPPLIES = JSON.stringify(locSupplies);
-                            console.log(room.SUPPLIES);
                             loadActualSupplies(room);
                         }
                         return room;
@@ -453,7 +493,7 @@ export default function ExaminationRoomTable() {
                 });
 
                 setLazyLoading(false);
-                setReloadDialog((prev) => !prev);
+
                 // Manually force the DataTable to update
                 dataTableRef.current && dataTableRef.current.filter();
 
@@ -464,12 +504,9 @@ export default function ExaminationRoomTable() {
 
     const insertSuppliesLazy = (value, examinationRoomCode) => {
         setLazyLoading(true);
-        console.log("Update Supplies in jsx");
         const token = localStorage.getItem('logged-user');
-        const tokenParsedData = GetUserData(token);
         const headers = { authorization: 'Bearer ' + token,'Content-Type': 'application/json' };
         const body =JSON.stringify( {supply: value, room:examinationRoomCode});
-        console.log(body);
         fetch(`/examination/supply/insert`, {
             method: 'POST',
             headers, body
@@ -481,8 +518,6 @@ export default function ExaminationRoomTable() {
                 return response.json();
             })
             .then((data) => {
-                console.log(value);
-                console.log(data);
                 let rooms = examinationRooms.map((room) => {
                     if (room.EXAMINATION_LOCATION_CODE === examinationRoomCode) {
                         let locSupplies = { ...JSON.parse(room.SUPPLIES) };
@@ -494,7 +529,7 @@ export default function ExaminationRoomTable() {
                 });
                 setExaminationRooms(rooms);
                 setLazyLoading(false);
-                setReloadDialog((prev) => !prev);
+
 
                 // Manually force the DataTable to update
                 dataTableRef.current && dataTableRef.current.filter();
@@ -516,8 +551,6 @@ export default function ExaminationRoomTable() {
         let _supplies = [...suppliesArray];
         let { newData, index } = e;
         _supplies[index] = newData;
-        console.log(_supplies);
-        console.log(e);
         setSuppliesArray(_supplies);
         updateSuppliesLazy(e.newData,examinationRoomCode);
 
@@ -569,6 +602,7 @@ export default function ExaminationRoomTable() {
         { field: 'DOCTOR_ID', header: 'Lekár', filter: true },
         { field: 'NURSE_ID', header: 'Zdravotná sestra', filter: true },
         { field: '', header: '', body: showSupplies, filter: false },
+        { field: '', header: '', body: editExaminationRoomtAction, filter: false },
         { field: '', header: '', body: deleteExaminationRoomtAction, filter: false }
     ];
 
@@ -624,12 +658,12 @@ export default function ExaminationRoomTable() {
                     ]}
                     emptyMessage="Žiadne výsledky nevyhovujú vyhľadávaniu"
                     virtualScrollerOptions={{
-                        lazy: true,
+                        //lazy: true,
                         onLazyLoad: loadExaminationRoomsLazy,
                         itemSize: 60,
-                        delay: 150,
+                        //delay: 150,
                         showLoader: true,
-                        loading: lazyLoading,
+                        //loading: lazyLoading,
                         loadingTemplate,
                     }}
                 >
@@ -661,33 +695,39 @@ export default function ExaminationRoomTable() {
             </Dialog>
             <div className="card flex justify-content-center">
             { /*Dialogove okno pre potreby */}
-                <Dialog  key={reloadDialog} header="Zdravotné potreby" visible={showSuppliesDialog} style={{width: '50vw'}}
+                <Dialog header="Zdravotné pomôcky" visible={showSuppliesDialog} style={{width: '50vw'}}
                         onHide={() => setShowSuppliesDialog(false)}>
-                    <Toast ref={toastRef} />
-
+                    <Toast ref={toastRef}/>
 
 
                     <div className="card p-fluid">
                         <DataTable ref={dataTableRef}
-                                   value={suppliesArray} editMode="row" dataKey="id" onRowEditComplete={onRowEditComplete}  tableStyle={{ minWidth: '30rem' }}>
+                                   value={suppliesArray} editMode="row" dataKey="id"
+                                   onRowEditComplete={onRowEditComplete} tableStyle={{minWidth: '30rem'}}>
                             <Column field="name" header="Názov" editor={(options) => textEditor(options)}></Column>
-                            <Column field="quantity" header="Množstvo"  editor={(options) => textEditor(options)}></Column>
-                            <Column rowEditor headerStyle={{ width: '10%', minWidth: '8rem' }} bodyStyle={{ textAlign: 'center' }}></Column>
-                            <Column field="" header="" body= { deleteSupplyAction} ></Column>
+                            <Column field="quantity" header="Množstvo"
+                                    editor={(options) => textEditor(options)}></Column>
+                            <Column rowEditor headerStyle={{width: '10%', minWidth: '8rem'}}
+                                    bodyStyle={{textAlign: 'center'}}></Column>
+                            <Column field="" header="" body={deleteSupplyAction}></Column>
 
 
                         </DataTable>
                     </div>
 
                     <div className="flex flex-column gap-2">
+                        <h2>Pridať zdravotnú pomôcku</h2>
                         <div className="flex flex-row gap-2">
                             <div className="flex flex-column">
                                 <label htmlFor="name">Názov</label>
-                                <InputText id="name" type="text" className="p-inputtext-sm" value={formData.name} onChange={(e) => handleInputChange(e, 'name')} autoComplete="name"/>
+                                <InputText id="name" type="text" className="p-inputtext-sm" value={formData.name}
+                                           onChange={(e) => handleInputChange(e, 'name')} autoComplete="name"/>
                             </div>
                             <div className="flex flex-column">
                                 <label htmlFor="quantity">Množstvo</label>
-                                <InputText id="quantity" keyfilter="int" type="text" className="p-inputtext-sm" value={formData.quantity} onChange={(e) => handleInputChange(e, 'quantity')} autoComplete="quality"   />
+                                <InputText id="quantity" keyfilter="int" type="text" className="p-inputtext-sm"
+                                           value={formData.quantity} onChange={(e) => handleInputChange(e, 'quantity')}
+                                           autoComplete="quality"/>
                             </div>
                         </div>
                         <div className="flex justify-center">
@@ -695,7 +735,7 @@ export default function ExaminationRoomTable() {
                                 icon="pi pi-plus"
                                 onClick={addNewSupply}
                                 autoFocus
-                                style={{ padding: '1rem' }}
+                                style={{padding: '1rem'}}
                             />
                         </div>
                     </div>

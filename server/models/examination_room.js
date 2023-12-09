@@ -1,13 +1,14 @@
 const database = require('../database/database');
 
-async function getExaminationLocationCode(roomLocationCode) {
+async function getExaminationRoomByLocationCode(roomLocationCode) {
     try {
         let conn = await database.getConnection();
 
+
         const result = await conn.execute(
-            `select * from examination_room  where examination_location_code = :roomLocationCode`,
+            `select * from examination_room where examination_location_code = :roomLocationCode`,
             {
-                roomLocationCode: roomLocationCode,
+                roomLocationCode: roomLocationCode
             }
         );
 
@@ -29,7 +30,6 @@ async function getExaminationRoomsByHospital(hospitalId) {
                 hospitalId: hospitalId,
             }
         );
-       // console.log(result.rows[0]);
 
 
         return result.rows;
@@ -52,7 +52,6 @@ async function getInformationAboutStaffByID(staffId) {
                 staffId: staffId,
             }
         );
-        // console.log(result.rows[0]);
 
 
         return result.rows;
@@ -80,7 +79,6 @@ async function insertSupplyInRoom(supply, examinationRoomNumber) {
             }
         );
 
-        // console.log(result.rows[0]);
 
         return result;
     } catch (err) {
@@ -109,7 +107,6 @@ async function updateSupplyInRoom(supply, examinationRoomNumber) {
             }
         );
 
-        // console.log(result.rows[0]);
 
         return result;
     } catch (err) {
@@ -135,7 +132,6 @@ async function deleteSupplyInRoom(supply, examinationRoomNumber) {
             }
         );
 
-        // console.log(result.rows[0]);
 
 
         return result;
@@ -162,7 +158,30 @@ async function addExaminationRoom(body) {
             nurseID: body.nurseID,
         });
 
-        console.log('Examination room  inserted ' + result);
+        return result;
+
+    } catch (err) {
+        throw new Error('Database error: ' + err);
+    }
+}
+
+async function updateExaminationRoom(body) {
+    try {
+        let conn = await database.getConnection();
+        const sqlStatement = `
+    BEGIN
+        UPDATE_EXAMINATION_ROOM(:examinationRoomNumber, :nameExaminationRoom, :department, :doctorID, :nurseID);
+    END;   
+    `;
+        let result = await conn.execute(sqlStatement, {
+            examinationRoomNumber: body.examinationRoomNumber,
+            nameExaminationRoom: body.nameExaminationRoom,
+            department: body.department,
+            doctorID: body.doctorID,
+            nurseID: body.nurseID,
+        });
+        return result;
+
     } catch (err) {
         throw new Error('Database error: ' + err);
     }
@@ -207,14 +226,13 @@ async function deleteExaminationRoom(examinationRoomNumber) {
             examinationRoomNumber: examinationRoomNumber
         });
 
-        console.log('Examination room delete ' + result);
     } catch (err) {
         throw new Error('Database error: ' + err);
     }
 }
 
 module.exports = {
-    getExaminationLocationCode,
+    getExaminationRoomByLocationCode,
     insertSupplyInRoom,
     getExaminationRoomsByHospital,
     getInformationAboutStaffByID,
@@ -222,5 +240,6 @@ module.exports = {
     deleteSupplyInRoom,
     addExaminationRoom,
     addExaminationRoomWithSupplies,
-    deleteExaminationRoom
+    deleteExaminationRoom,
+    updateExaminationRoom
 };

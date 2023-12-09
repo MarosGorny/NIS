@@ -47,5 +47,15 @@ router.delete(
     controller.deleteExaminationRoom
 );
 
+router.post('/update', controller.updateExaminationRoom);
+
+
+router.get(
+    '/formData/:id',
+    //verify.verifyRoles(1, 3),
+    //verify.checkForCorrectId(),
+    controller.getExaminationRoomByLocationCode
+);
+
 
 module.exports = router;

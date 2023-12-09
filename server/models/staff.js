@@ -30,7 +30,6 @@ async function getDoctorsByHospital(hospitalId) {
                 hospitalId: hospitalId,
             }
         );
-        // console.log(result.rows[0]);
 
         return result.rows;
     } catch (err) {
@@ -51,8 +50,6 @@ async function getNursesByHospital(hospitalId) {
                 hospitalId: hospitalId,
             }
         );
-        console.log("model nurse");
-         console.log(result);
 
         return result.rows;
     } catch (err) {
