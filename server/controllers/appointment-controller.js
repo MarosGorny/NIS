@@ -11,6 +11,26 @@ module.exports = {
       res.status(500).send(err.message); // Sending a 500 (Internal Server Error) for any errors
     });
   },
+  getFutureAppointmentsForPatient: (req, res) => {
+    (async () => {
+      const patientId = req.params.patientId;
+      const appointments = await appointmentModel.getFutureAppointmentsForPatient(patientId);
+      res.status(200).json(appointments);
+    })().catch((err) => {
+      console.error(err);
+      res.status(500).send(err.message);
+    });
+  },
+  getHistoricalAppointmentsForPatient: (req, res) => {
+    (async () => {
+      const patientId = req.params.patientId;
+      const appointments = await appointmentModel.getHistoricalAppointmentsForPatient(patientId);
+      res.status(200).json(appointments);
+    })().catch((err) => {
+      console.error(err);
+      res.status(500).send(err.message);
+    });
+  },
   addAppointment: (req, res) => {
     (async () => {
       await appointmentModel.addAppointment(req.body);
@@ -20,14 +40,14 @@ module.exports = {
       res.status(403).send(err.message);
     });
   },
-  deleteAppointment: (req, res) => {
-    (async () => {
-      await appointmentModel.deleteAppointment(req.params.id);
-      res.status(200).json({ message: 'Appointment deleted successfully' });
-    })().catch((err) => {
-      console.error(err);
-      res.status(403).send(err.message);
-    });
-  },
+  // deleteAppointment: (req, res) => {
+  //   (async () => {
+  //     await appointmentModel.deleteAppointment(req.params.id);
+  //     res.status(200).json({ message: 'Appointment deleted successfully' });
+  //   })().catch((err) => {
+  //     console.error(err);
+  //     res.status(403).send(err.message);
+  //   });
+  // },
 
 };

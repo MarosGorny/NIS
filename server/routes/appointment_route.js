@@ -8,15 +8,26 @@ router.get(
   controller.getAppointmentsForPatient
   );
 
+router.get(
+  '/patient/future/:patientId', 
+  controller.getFutureAppointmentsForPatient
+  );
+
+router.get(
+  '/patient/historical/:patientId', 
+  controller.getHistoricalAppointmentsForPatient
+  );
+
+
 router.post(
   '/add',
   controller.addAppointment
 );
 
-router.get(
-  '/delete/:id',
-  controller.deleteAppointment
-);
+// router.get(
+//   '/delete/:id',
+//   controller.deleteAppointment
+// );
 
 
 
