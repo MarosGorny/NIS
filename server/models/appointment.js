@@ -14,7 +14,8 @@ async function getAppointmentsForPatient(patientId) {
       JOIN examination_room er ON(a.examination_location_code = er.examination_location_code)
       JOIN appointment_examination_type aet ON(a.examination_type = aet.examination_type_code)
       JOIN medical_procedure mp ON(a.medical_procedure_code = mp.medical_procedure_code)
-      WHERE a.patient_id = :patientId`;
+      WHERE a.patient_id = :patientId
+      ORDER BY a.date_examination DESC`;
 
     const result = await conn.execute(sqlStatement, { patientId: patientId });
     return result.rows;
@@ -37,7 +38,8 @@ async function getFutureAppointmentsForPatient(patientId) {
           JOIN examination_room er ON a.examination_location_code = er.examination_location_code
           JOIN appointment_examination_type aet ON a.examination_type = aet.examination_type_code
           JOIN medical_procedure mp ON a.medical_procedure_code = mp.medical_procedure_code
-          WHERE a.patient_id = :patientId AND a.date_examination >= SYSDATE`;
+          WHERE a.patient_id = :patientId AND a.date_examination >= SYSDATE
+          ORDER BY a.date_examination ASC`;
 
       const result = await conn.execute(sqlStatement, { patientId: patientId });
       return result.rows;
@@ -60,7 +62,8 @@ async function getHistoricalAppointmentsForPatient(patientId) {
           JOIN examination_room er ON a.examination_location_code = er.examination_location_code
           JOIN appointment_examination_type aet ON a.examination_type = aet.examination_type_code
           JOIN medical_procedure mp ON a.medical_procedure_code = mp.medical_procedure_code
-          WHERE a.patient_id = :patientId AND a.date_examination < SYSDATE`;
+          WHERE a.patient_id = :patientId AND a.date_examination < SYSDATE
+          ORDER BY a.date_examination DESC`;
 
       const result = await conn.execute(sqlStatement, { patientId: patientId });
       return result.rows;
