@@ -159,14 +159,17 @@ async function getAppointmentsCountByDate(hospitalId, paramDate = null) {
       count: { dir: database.oracledb.BIND_OUT, type: database.oracledb.NUMBER }
     };
 
-    let query = `BEGIN :count := GetAppointmentsCountByDate(:hospitalId`;
+    let query = `BEGIN :count := GET_APPOINTMENTS_COUNT_BY_DATE(:hospitalId`;
 
     if (paramDate) {
-      query += `, TO_DATE(:paramDate, 'MM-DD-YYYY')`;
+      query += `, TO_DATE(:paramDate, 'DD-MON-YY')`;
       bindVars.paramDate = paramDate;
     }
 
     query += `); END;`;
+
+    console.log(query);
+    console.log(bindVars);
 
     const result = await conn.execute(query, bindVars);
 
