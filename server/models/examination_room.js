@@ -24,7 +24,8 @@ async function getExaminationRoomsByHospital(hospitalId) {
                 from examination_room e
                 join department on(e.department_location_code = department.department_location_code)
                 join hospital using(hospital_id)
-                where hospital_id = :hospitalId`,
+                where hospital_id = :hospitalId
+                ORDER BY e.examination_location_code ASC`,
             {
                 hospitalId: hospitalId,
             }

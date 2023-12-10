@@ -61,18 +61,15 @@ export default function Dashboard(props) {
     const headers = { authorization: 'Bearer ' + token };
     const effectiveHospitalId = hospitalId || GetUserData(token).UserInfo.hospital;
 
-    if(date === undefined) {
-      date = new Date()
-        .toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'numeric',
-          day: 'numeric',
-        })
-        .split('/')
-        .join('-');
-    }
+    const currentDate = date ? new Date(date) : new Date();
+    
+    const day = currentDate.getDate();
+    const month = currentDate.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+    const year = currentDate.getFullYear().toString().substr(-2); 
 
-    fetch(`/dashboard/hospital/appointments-count/${effectiveHospitalId}/${date}`, { headers })
+    const formattedDate = `${day}-${month}-${year}`;
+
+    fetch(`/dashboard/hospital/appointments-count/${effectiveHospitalId}/${formattedDate}`, { headers })
       .then(response => response.json())
       .then(count => {
         setAppointmentsCount(count);
