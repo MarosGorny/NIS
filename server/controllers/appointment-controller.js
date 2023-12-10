@@ -40,14 +40,4 @@ module.exports = {
       res.status(403).send(err.message);
     });
   },
-  // deleteAppointment: (req, res) => {
-  //   (async () => {
-  //     await appointmentModel.deleteAppointment(req.params.id);
-  //     res.status(200).json({ message: 'Appointment deleted successfully' });
-  //   })().catch((err) => {
-  //     console.error(err);
-  //     res.status(403).send(err.message);
-  //   });
-  // },
-
 };

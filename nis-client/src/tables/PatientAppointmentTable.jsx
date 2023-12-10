@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
 import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
@@ -16,11 +15,6 @@ export default function PatientAppointmentsTable(props) {
     const toast = useRef(null);
     const [showAppointmentForm, setShowAppointmentForm] = useState(false); // State to toggle the form
     const [selectedAppointmentType, setSelectedAppointmentType] = useState('all');
-
-    const loadAppointmentsByType = () => {
-        // Implement the logic to load appointments based on selectedAppointmentType
-        // Use SQL queries in the model to filter data
-    };
 
     const onAppointmentTypeChange = (e) => {
         setSelectedAppointmentType(e.value);
@@ -44,16 +38,9 @@ export default function PatientAppointmentsTable(props) {
             .catch(error => console.error('Error fetching patient appointments:', error));
     };
 
-    const appointmentTypeSelectItems = [
-        { label: 'Všetky Stretnutia', value: 'vsetky' },
-        { label: 'Plánované Stretnutia', value: 'planovane' },
-        { label: 'História Stretnutí', value: 'historia' },
-        // ... any other types ...
-    ];
-
     useEffect(() => {
         fetchPatientAppointments();
-    }, [selectedAppointmentType]); 
+    }, [selectedAppointmentType]);
 
 
 
@@ -61,20 +48,20 @@ export default function PatientAppointmentsTable(props) {
         const date = new Date(dateString);
 
         // Format the date part
-        const formattedDate = date.toLocaleDateString('en-GB', {
+        const formattedDate = date.toLocaleDateString('sk-SK', {
             day: '2-digit',
-            month: 'short',
+            month: '2-digit',
             year: 'numeric'
-        }).toUpperCase();
+        });
 
         // Format the time part
-        const formattedTime = date.toLocaleTimeString('en-GB', {
+        const formattedTime = date.toLocaleTimeString('sk-SK', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: false
         });
 
-        return `${formattedDate} | ${formattedTime}`;
+        return `${formattedDate} - ${formattedTime}`;
     };
 
     const renderDateBodyTemplate = (rowData) => {
@@ -86,7 +73,7 @@ export default function PatientAppointmentsTable(props) {
             <div className="table-header">
                 <span>Stretnutia</span>
                 <div className="table-header-right">
-                <Dropdown
+                    <Dropdown
                         value={selectedAppointmentType}
                         options={[
                             { label: 'Všetky Stretnutia', value: 'all' },
@@ -123,7 +110,6 @@ export default function PatientAppointmentsTable(props) {
         <div>
             <Toast ref={toast} />
             {showAppointmentForm ? (
-                // Conditionally render the AppointmentForm if showAppointmentForm is true
                 <AppointmentForm />
             ) : (
                 <DataTable value={appointments} header={renderHeader()} responsiveLayout="scroll"

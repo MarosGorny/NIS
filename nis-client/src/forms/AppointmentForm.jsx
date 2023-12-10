@@ -4,7 +4,7 @@ import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-import '../shared/css/form.scss'; // Adjust the path if necessary
+import '../shared/css/form.scss'; 
 import GetUserData from 'auth/get_user_data';
 import { useLocation } from 'react-router';
 
@@ -42,7 +42,6 @@ const AppointmentForm = () => {
 
     const onSubmit = async (data, form) => {
         const token = localStorage.getItem('logged-user');
-        const userData = GetUserData(token);
 
         const examinationDateTime = new Date(data.date);
         const time = new Date(data.time);
@@ -83,7 +82,7 @@ const AppointmentForm = () => {
             }
 
             showSuccess();
-            form.restart(); // Reset the form after successful submission
+            form.restart(); 
         } catch (err) {
             showError(err.message || 'An error occurred during submission');
         }

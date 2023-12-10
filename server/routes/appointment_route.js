@@ -24,12 +24,5 @@ router.post(
   controller.addAppointment
 );
 
-// router.get(
-//   '/delete/:id',
-//   controller.deleteAppointment
-// );
-
-
-
 
 module.exports = router;
