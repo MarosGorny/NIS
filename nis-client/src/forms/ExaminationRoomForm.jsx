@@ -39,6 +39,8 @@ export default function ExaminationRoomForm() {
 
     });
     const [isFetchingData, setIsFetchingData] = useState(false);
+    const [pageTitle, setPageTitle] = useState("Pridanie novej ambulancie"); // Default hodnota pre titulok
+
 
 
 
@@ -180,6 +182,7 @@ export default function ExaminationRoomForm() {
 
         const token = localStorage.getItem('logged-user');
         const headers = { authorization: 'Bearer ' + token };
+        setPageTitle("Úprava ambulancie");
         fetch(`/examination/formData/${examinationRoomNumber}`, {
             headers,
         })
@@ -223,8 +226,8 @@ export default function ExaminationRoomForm() {
     const showError = () => {
         toast.current.show({
             severity: 'error',
-            summary: 'Ambulancia ju sa nepodarilo pridať',
-            detail: 'Ambulanciu sa nepodarilo pridať, kvoli zlým údajom',
+            summary: 'Ambulanciu  sa nepodarilo pridať',
+            detail: 'Ambulanciu sa nepodarilo pridať, kvôli zlým údajom',
             life: 3000,
         });
     };
@@ -320,6 +323,7 @@ export default function ExaminationRoomForm() {
     };
 
     const updateExaminationRooom = async (data, form) => {
+        setPageTitle("Úprava ambulancie");
         const token = localStorage.getItem('logged-user');
         const tokenParsedData = GetUserData(token);
         const headers = { authorization: 'Bearer ' + token,'Content-Type': 'application/json' };
@@ -369,6 +373,7 @@ export default function ExaminationRoomForm() {
             updateExaminationRooom(data,form);
         }
         else {
+            setPageTitle("Pridanie novej  ambulancie");
             if (items[0].name == ''){
                 addExaminationRooom(data,form);
             }
@@ -395,7 +400,7 @@ export default function ExaminationRoomForm() {
     const showEditError = () => {
         toast.current.show({
             severity: 'error',
-            summary: 'Ambulancia sa nepodarilo upraviť',
+            summary: 'Ambulanciu sa nepodarilo upraviť',
             life: 3000,
         });
     };
@@ -417,7 +422,7 @@ export default function ExaminationRoomForm() {
         toast.current.show({
             severity: 'success',
             summary: 'Úspešne pridaná',
-            detail: 'Ambulancia  bola úspešne pridana',
+            detail: 'Ambulancia  bola úspešne pridaná',
             life: 3000,
         });
     };
@@ -461,7 +466,7 @@ export default function ExaminationRoomForm() {
                 <Link to="/examination-room/">
                 <Button type="button" label="Späť" icon="pi pi-arrow-left" />
                 </Link>
-                <h1 style={{ textAlign: 'center', flex: 1 }}>Pridanie novej ambulancie</h1>
+                <h1 style={{ textAlign: 'center', flex: 1 }}>{pageTitle}</h1>
             </div>
             <div className="flex flex-column gap-2">
                 <Form
@@ -531,7 +536,7 @@ export default function ExaminationRoomForm() {
                                                 'p-error': isFormFieldValid(meta),
                                             })}
                                         >
-                                            Oddelenie*
+                                            Oddelenie
                                         </label>
                                         <AutoComplete
                                             id="department"
@@ -588,7 +593,7 @@ export default function ExaminationRoomForm() {
                                                 'p-error': isFormFieldValid(meta),
                                             })}
                                         >
-                                            Lekar
+                                            Lekár
                                         </label>
                                         <AutoComplete
 
@@ -656,7 +661,7 @@ export default function ExaminationRoomForm() {
                                                 'p-error': isFormFieldValid(meta),
                                             })}
                                         >
-                                            Sestra
+                                            Zdravotná sestra
                                         </label>
                                         <AutoComplete
 
@@ -714,12 +719,12 @@ export default function ExaminationRoomForm() {
                                 style={{ justifyContent: 'center', display: 'grid' }}
                             >
                                 {!isFetchingData && (
-                                    <Button type="button" label="Pridať zdravotné potreby" icon="pi pi-plus" onClick={openDialog}/>
+                                    <Button type="button" label="Pridať zdravotné pomôcky" icon="pi pi-plus" onClick={openDialog}/>
                                 )}
                             </div>
 
                                 {/* Dialógové okno */}
-                                <Dialog header="Dáta" visible={showDialog} style={{ width: '80vw' }} onHide={closeDialog}>
+                                <Dialog header="Zdravotné pomôcky" visible={showDialog} style={{ width: '80vw' }} onHide={closeDialog}>
                                     <div className="flex flex-column gap-2">
                                         {items.map(item => (
                                             <div key={item.id} className="p-col-6 p-md-6">
@@ -745,8 +750,8 @@ export default function ExaminationRoomForm() {
                                             </div>
                                         ))}
                                     </div>
-                                    <Button label="Pridať Novú Položku" onClick={addNewItem} />
-                                    <Button label="Ulozit" onClick={closeDialog} />
+                                    <Button label="Pridať novú pomôcku" onClick={addNewItem} />
+                                    <Button label="Uložiť" onClick={closeDialog} />
                                 </Dialog>
 
                                 <div

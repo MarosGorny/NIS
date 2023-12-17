@@ -160,15 +160,15 @@ export default function ExaminationRoomTable() {
 
                     <p>Meno a priezvisko: { o_doctor[0].MENOPRIEZVISKO}</p>
                     <p>Odbor: { o_doctor[0].ODBOR}</p>
-                    <p>Pozicia: { o_doctor[0].POZICIA}</p>
-                    <p>Specializacia: { o_doctor[0].SPECIALIZACIA}</p>
+                    <p>Pozícia: { o_doctor[0].POZICIA}</p>
+                    <p>Špecializácia: { o_doctor[0].SPECIALIZACIA}</p>
 
                     <h2>Sestra:</h2>
 
                     <p>Meno a priezvisko: {o_nurse[0].MENOPRIEZVISKO}</p>
                     <p>Odbor: {o_nurse[0].ODBOR}</p>
-                    <p>Pozicia: {o_nurse[0].POZICIA}</p>
-                    <p>Specializacia: {o_nurse[0].SPECIALIZACIA}</p>
+                    <p>Pozícia: {o_nurse[0].POZICIA}</p>
+                    <p>Špecializácia: {o_nurse[0].SPECIALIZACIA}</p>
 
 
                 </div>
@@ -283,7 +283,7 @@ export default function ExaminationRoomTable() {
             <ConfirmDialog visible={dialogVisible} onHide={() => setDialogVisible(false)} message="Naozaj si prajete odstrániť ambulanciu?"
                            header="Potvrdenie" icon="pi pi-exclamation-triangle" acceptClassName="p-button-danger" accept={() => handleAccept()}  reject={() => reject(toastDelete)} acceptLabel="Áno" rejectLabel="Nie"  />
             <div className="card flex flex-wrap gap-2 justify-content-center">
-                <Button tooltip="Odstrániť Ambulanciu"  icon="pi pi-times"  className="p-button-danger"  onClick={() => confirmDelete(rowData)} />
+                <Button tooltip="Odstrániť ambulanciu"  icon="pi pi-times"  className="p-button-danger"  onClick={() => confirmDelete(rowData)} />
             </div>
         </>
 
@@ -304,7 +304,7 @@ export default function ExaminationRoomTable() {
 
 
             <div className="card flex flex-wrap gap-2 justify-content-center">
-                <Button  icon="pi pi-pencil"  tooltip="Upraviť Ambulanciu"  onClick={() => handleEditClick(rowData)} />
+                <Button  icon="pi pi-pencil"  tooltip="Upraviť ambulanciu"  onClick={() => handleEditClick(rowData)} />
             </div>
 
 
@@ -663,7 +663,7 @@ export default function ExaminationRoomTable() {
                         itemSize: 60,
                         //delay: 150,
                         showLoader: true,
-                        //loading: lazyLoading,
+                        loading: lazyLoading,
                         loadingTemplate,
                     }}
                 >
